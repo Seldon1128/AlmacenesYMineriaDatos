@@ -1,0 +1,19 @@
+# Diccionario de datos
+
+A continuación se presenta la descripción de las columnas del dataset:
+
+| Nombre de la columna | Descripción                                  | Tipo de dato | Tipo estadístico         |
+|----------------------|----------------------------------------------|--------------|--------------------------|
+| Unnamed: 0           |Enumera los registros                         | entero       | Numérica **discreta**    |
+| nombrecompleto       |El nombre completo de la persona desaparecida | string       | Cualitativa **nominal**  |
+| rnpdno_json          |                                              | entero       | Numérica                 |
+| entidad_desap        |Estado en el que desapareció                  | string       | Cualitativa **nominal**  |
+| pre_rnped            |                                              | entero       | Numérica                 |
+| rnped                |                                              | entero       | Numérica                 |
+| rnpdno_csv           |                                              | entero       | Numérica                 |
+| bg_1                 |                                              | entero       | Numérica                 |
+| estatus_busqueda     |                                              | string       | Cualitativa **ordinal?** |
+| bg_2                 |                                              | entero       | Numérica                 |
+| fub                  |                                              | string       |                          |
+| DC_id                |                                              | string       |                          |
+| fecha_desap          |                                              | string       | Cualitativa **ordinal?** |

@@ -1,0 +1,90 @@
+# Introducción al dataset
+
+En esta sección vamos a comenzar a adentrarnos en el dataset, para conocer de manera general la forma en la que está estructurado.
+
+Comenzaremos importando algunas bibliotecas útiles y cargando el dataset.
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+df = pd.read_csv("../data/tot_reg_desap.csv")
+df.head(3)
+```
+
+## Estructura general 
+
+Una vez cargado el dataset, podemos ver que:
+
+```{python}
+# numero de filas y columnas
+filas, columnas = df.shape
+print("Número de filas:", filas)
+print("Número de columnas:", columnas)
+
+# nombres de las columnas
+print(f"Nombre de cada columna: {list(df.columns)}")
+```
+
+Otra característica importante de nuestro conjunto de datos es la *presencia de datos nulos* y el 
+*tipo de dato* de cada columna.
+
+```{python}
+df.info()
+```
+
+De esto podemos rescatar que las columnas con datos nulos en orden de mayor a menor son:
+
+| Núm. Columna | Nombre Columna   | Número de registros con valores nulos |
+| ------------ | ---------------- | ------------------------------------- |
+| 8            | estatus_busqueda | 27364                                 |
+| 10           | fub              | 26050                                 |
+| 11           | DC_id            | 9651                                  |
+| 12           | fecha_desap      | 6925                                  |
+
+## Periodo cubierto
+Como pudimos ver una de las columnas que tenemos es *fecha_desap* de tipo `str`, por lo que nos interesa conocer el periodo que cubren los registros.
+
+A simple vista pareciera que las fechas están en formato `DD/MM/AAAA` suponinedo que esto es así, vamos a verificar que la longitud de las cadenas sea la misma o al menos parecida por si hay espacios.
+
+```{python}
+df['fecha_desap'].str.len().value_counts()
+```
+
+Tan solo con esta revisión podemos ver que únicamente 72,167 registros **podrían** seguir el formato esperado. Mientras que más de 9,651 registros no lo hacen. Ya que el número de registros con logitud 33,274 es muy alto, se revisó como eran esos datos, llegando así a que en realidad estas 9,651 filas tienen exactamente el mismo valor registrado, el cual consta de una serie de fechas. 
+
+```{python}
+fechas_anomalas = df[df['fecha_desap'].str.len() == 33274]['fecha_desap']
+val_anomalas = fechas_anomalas.unique()
+print(f"Valores del campo fecha_desap con longitud 33,274: {val_anomalas}")
+```
+
+Para obtener la fecha máxima y mínima que hay en nuestro conjunto de datos, vamos a dividir las filas que tienen más de una fecha y las que tienen solo una, para después pasar de tipo `str` a tipo `date`.
+
+```{python}
+# filas con múltiples fechas
+fechas_anomalas = df[df['fecha_desap'].str.len() != 10]['fecha_desap']
+# eliminamos las fechas que se duplican
+fechas_anomalas = fechas_anomalas.drop_duplicates()
+
+# filas con solo una fecha
+fechas = df[df['fecha_desap'].str.len() == 10]['fecha_desap']
+# eliminamos duplicados
+fechas = fechas.drop_duplicates()
+dates = pd.to_datetime(fechas, errors='coerce', dayfirst=True)
+
+dates_anomalas = []
+
+for fechas in fechas_anomalas:
+    ls = str(fechas).split(', ')
+    dates_anomalas.extend(ls)
+
+dates_anomalas = pd.to_datetime(dates_anomalas, errors='coerce', dayfirst=True)
+
+min_global = dates_anomalas.min() if dates_anomalas.min() <= dates.min() else dates.min()
+max_global = dates_anomalas.max() if dates_anomalas.max() >= dates.max() else dates.max()
+
+print(f'Periodo cubierto: Del {min_global.date()} al {max_global.date()}')
+```
+

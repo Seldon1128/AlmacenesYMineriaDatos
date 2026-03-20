@@ -1,0 +1,35 @@
+project:
+  type: book
+
+book:
+  title: "Análisis exploratorio del data set: 'tot_reg_desap.csv'"
+  author: "Arlet Pinacho Báez, 
+   Isaac Giovani Escobar Gónzalez,
+   Kevin Jonathan Garduño Escobar,
+   Seldon Sautto Ramírez"
+  date: "3/13/2026"
+  chapters:
+    - index.qmd
+    - metodologias.qmd
+    - intro_dataset.qmd
+    - dic.qmd
+    - crisp.qmd
+    - medidas_visual_interp.qmd
+    - correlacion.qmd
+    - limpieza.qmd
+    - reporte.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    code-fold: true
+    theme:
+      - cosmo
+      - brand
+  pdf:
+    documentclass: scrreprt
+
+
+

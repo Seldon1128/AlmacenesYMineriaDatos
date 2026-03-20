@@ -1,0 +1,15 @@
+# Metodologías de Minería de Datos
+
+Cada integrante del equipo eligió una empresa distinta en la que le gustaría trabajar e investigó qué metodología utiliza para desarrollar proyectos de Minería de Datos.
+
+## Isaac
+
+## Kevin
+
+## Arlet
+
+## Seldon
+
+:::{.callout-note}
+Entregable: un apartado breve por integrante, sustentado con citas de fuentes confiables.
+:::

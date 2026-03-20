@@ -1,0 +1,9 @@
+
+# Ambientes
+.venv/
+.venvt2/
+
+# Quarto
+_book/
+.quarto/
+*.quarto_ipynb

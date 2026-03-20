@@ -1,0 +1,16 @@
+# Aplicación de CRISP-DM al dataset
+
+A continuación se detallan las actividades concretas que se realizarían en cada fase de la metodología *CRISP-DM*.
+
+## Business Understanding
+
+## Data Understanding
+
+## Data Preparation
+
+## Modelling
+
+## Evaluation
+
+## Deployment
+

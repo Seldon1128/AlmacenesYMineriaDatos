@@ -1,0 +1,11 @@
+# Hallazgos y limitaciones
+
+## Objetivo y preguntas de análisis
+
+## Descripción del dataset
+
+## Hallazgos
+
+## Limitaciones
+
+## Conclusión
