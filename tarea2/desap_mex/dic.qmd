@@ -1,19 +1,151 @@
 # Diccionario de datos
 
-A continuación se presenta la descripción de las columnas del dataset:
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+df = pd.read_csv("../data/tot_reg_desap.csv")
+```
+
+## Contexto histórico
+
+Para comprender el significado de las columnas que conforman nuestro conjunto de datos 
+es necesario tomar en cuenta que la forma en la que se registran los datos de personas desaparecidas 
+en nuestro país a ha cambiado en varias ocasiones. Como se muestra enla páginas 20 a 25 de @datacivica2024, de forma general
+los registros han tenido la siguiente evolución:
+
+1. Registro Nacional de Datos de Personas Extraviadas o Desaparecidas (**RNPED**)
+    - Periodo de publicación: 2012 (abril) - 2018 (mayo)
+    - ¿Descargable? No
+    - ¿Existente actualmente? No
+    - Descripción: **Base de datos electrónica** que contiene información de personas desaparecidas de forma voluntaria o involuntaria [@sesnsp2019]
+    - Fuentes: Entidades federativas (procuradurías o fiscalías) y autoridades federales [@sesnsp2019]
+    - Características notables:
+        + **Registro saldo**^[En cada actualización también se eliminan los registros de las personas que *"son encontradas"* manteniendo registros únicamente de las personas que continúan desaparecidas] [@sesnsp2017rnped]
+
+2. Centro Nacional de Planeación Análisis e Información para el Combate a la Delincuencia (**CENAPI**)
+    - Año de publicación: 2018 (abril)
+    - ¿Descargable? Sí
+    - ¿Existente actualmente? No
+    - Descripción: Era la fuente principal del RNPED y se publicó una única vez.
+
+
+3.  Registro Nacional de Personas Desaparecidas y No Localizadas (01 **RNPDNO**)
+    -  Año de inicio: 2020 (junio)
+    - ¿Descargable? Después del 9 de julio se elimina la posibilidad de descarga de las tablas generadas a partir de las gráficas
+    - ¿Existente actualmente? Si (nueva versión)
+    - Descripción: **Plataforma** que centraliza y visualiza **agregados de registros** de personas deaparecidas.
+    - Fuentes: Particulares, autoridades de la Federación y de las enidades federativas.
+    
+4.  **Versión pública** del RNPDNO
+    - Año de publicación: 2023
+    - ¿Descargable? Fue descargable entre el 8 de agosto del 2023 y el 9 de julio de 2024
+    - ¿Existente actualmente? No
+    - Descripción: **Registro** donde **cada renglón representa a un individuo**. Se publica en dos formatos:
+        + 5 de agosto en formato json con 450 variables que en su mayoría eran vacías
+        + 22 de agosto en un archivo csv con un subconjunto de 11 variables
+
+5. *Versión pública **especial para consulta***
+    - Año de publicación: 2023 (diciembre)
+    - ¿Descargable? No
+    - ¿Existente actualmente? No
+    - Descripción: Versión *consultable* del registro con 11 variables. Una de las cuales es el **estatus de busqueda**, resultado de la "Estrategia Nacional de Búsqueda Generalizada".
+    Se publicó el 14 de diciembre pero fue hasta una actualización posterior, el 27 de diciembre, que se incorpora el **estatus de busqueda**.
+
+6. **Nueva versión** del RNPDNO (02 **RNPDNO**) 
+    - Año de inicio: 2024 (julio 9)
+    - ¿Descargable? No
+    - ¿Existente actualmente? Si
+    - Descripción: Consta de dos modalidades: la *versión estadística* y la *versión consulta*. 
+
+    La primera es similar a la del 2020 con la diferencia de que ya no se pueden descargar las tablas que generan las gráficas, además ya no se incluye la clasificación de la "Estrategia Nacional de Búsqueda Generalizada". Por otro lado, la de consulta muestra fichas de personas desaparecidas 
+
+
+## Valores registrados por columna
+
+Antes de determinar el significado de cada fila en el dataset, vamos a ver con un poco más a detalle los valores que contiene cada columna, a excepción de la columna`fecha_desap` pues ya hemos explorado sus valores.
+
+### `nombrecompleto`
+```{python}
+print(f'Valores contenidos en la columna \'nombrecompleto\' y el total de apariciones de cada valor \n {df['nombrecompleto'].value_counts()}')
+```
+
+De aquí podemos ver que es posible que existan filas duplicadas aunque siempre está la posibilidad de que en efecto sen personas distintas pero con el mismo nombre, también podemos revisar el resto de columnas para ver si en efecto la información es la misma y se trata de duplicados.
+
+### `rnpdno_json` y `rnpdno_csv`
+```{python}
+print(f'Valores contenidos en la columna \'rnpdno_json\' y el total de apariciones de cada valor \n {df['rnpdno_json'].value_counts()}')
+```
+
+```{python}
+print(f'Valores contenidos en la columna \'rnpdno_csv\' y el total de apariciones de cada valor \n {df['rnpdno_csv'].value_counts()}')
+```
+
+En el caso de estas dos variables se tienen únicamente los valores 0 o 1, por lo que podemos intuir que se trata de un indicador booleanao. Además, por el nombre de la columna sabemos que está relacionado con el *RNPDNO* y con json o csv, según la variable. Por ello, recordando el contexto de los registros oficiales podemos colcuir que `rnpdno_json` indica si el registro estaba contenido en la versión del 5 de agosto publicada en formato json. Mientras que `rnpdno_csv` indica si el registro estaba contenido en la versión del 22 de agosto, publicada en formato csv.
+
+### `entidad_desap`
+```{python}
+print(f'Valores contenidos en la columna \'entidad_desap\' y el total de apariciones de cada valor \n {df['entidad_desap'].value_counts()}')
+```
+
+En los valores de esta columna vemos no solo las 32 entidades federativas de México, sino además una opción '' para los casos en los que se desconoce el dato.
+
+### `pre_rnped` y `rnped`
+```{python}
+print(f'Valores contenidos en la columna \'pre_rnped\' y el total de apariciones de cada valor \n {df['pre_rnped'].value_counts()}')
+```
+
+```{python}
+print(f'Valores contenidos en la columna \'rnped\' y el total de apariciones de cada valor \n {df['rnped'].value_counts()}')
+```
+
+De forma bastante similar a las columnas `rnpdno_json` y `rnpdno_csv`, en este caso también tenemos variables booleanas pero relacionadas al *RNPED* que es el primer registro del país. Por lo tanto, con base en los nombres de las variables tiene sentido decir que `pre_rnped` es una variable que marca si el registro se encuntra en versiones previas a la última versión del *RNPED* lanzada en 2018 y `rnped` marca si se encuentra en la última versión del *RNPED*.
+
+### `bg_1` y `bg_2`
+
+```{python}
+print(f'Valores contenidos en la columna \'bg_1\' y el total de apariciones de cada valor {df['bg_1'].value_counts()}')
+```
+
+```{python}
+print(f'Valores contenidos en la columna \'bg_2\' y el total de apariciones de cada valor {df['bg_2'].value_counts()}')
+```
+
+
+
+### `estatus_busqueda`
+```{python}
+print(f'Valores contenidos en la columna \'estatus_busqueda\' y el total de apariciones de cada valor {df['estatus_busqueda'].value_counts()}')
+```
+
+### `fub`
+```{python}
+print(f'Valores contenidos en la columna \'fub\' y el total de apariciones de cada valor {df['fub'].value_counts()}')
+```
+
+### `DC_id`
+```{python}
+print(f'Valores contenidos en la columna \'DC_id\' y el total de apariciones de cada valor {df['DC_id'].value_counts()}')
+```
+
+## Diccionario
+
+Con base en esta información se define el significado de cada columna en el conjunto de datos asignado.
 
 | Nombre de la columna | Descripción                                  | Tipo de dato | Tipo estadístico         |
 |----------------------|----------------------------------------------|--------------|--------------------------|
-| Unnamed: 0           |Enumera los registros                         | entero       | Numérica **discreta**    |
-| nombrecompleto       |El nombre completo de la persona desaparecida | string       | Cualitativa **nominal**  |
-| rnpdno_json          |                                              | entero       | Numérica                 |
-| entidad_desap        |Estado en el que desapareció                  | string       | Cualitativa **nominal**  |
-| pre_rnped            |                                              | entero       | Numérica                 |
-| rnped                |                                              | entero       | Numérica                 |
-| rnpdno_csv           |                                              | entero       | Numérica                 |
-| bg_1                 |                                              | entero       | Numérica                 |
+| Unnamed: 0           | Únicamente enumera los registros             | entero       | Numérica **discreta**    |
+| nombrecompleto       | El nombre completo de la persona desaparecida o no localizada | string       | Cualitativa **nominal**  |
+| rnpdno_json          | Indica si la fila aparece en la extracción de datos vía JSON del RNPDNO | entero (1 o 0) | Numérica **discreta** |
+| entidad_desap        | Entidad federativa en la se reportó la desaparición o se tuvo el ultimo contacto | string       | Cualitativa **nominal**  |
+| pre_rnped            | Indica si la fila aparece en el *RNPED* antes de su última publicación | entero (1 o 0) | Numérica **discreta** |
+| rnped                | Indica si la fila aparece en el *RNPED* en su última publicación | entero (1 o 0) | Numérica **discreta** |
+| rnpdno_csv           | Indica si la fila aparece en la extracción de datos vía CSV del RNPDNO | entero (1 o 0)| Numérica **discreta**   |
+| bg_1                 |                                              | entero (1 o 0)| Numérica **discreta**   |
 | estatus_busqueda     |                                              | string       | Cualitativa **ordinal?** |
-| bg_2                 |                                              | entero       | Numérica                 |
-| fub                  |                                              | string       |                          |
+| bg_2                 |                                              | entero (1 o 0)| Numérica **discreta**   |
+| fub                  | Es el folio único de búsqueda en el Registro Nacional de Personas Desaparecidas o No Localizadas. Una persona puede tener más de uno si el caso fue reportado por distintas personas o autoridades aunque deben estar asociados | string       | Cualitativa **nominal?** |
 | DC_id                |                                              | string       |                          |
-| fecha_desap          |                                              | string       | Cualitativa **ordinal?** |
+| fecha_desap          | Fecha de la desaparición                     | string       | Cualitativa **ordinal?** |

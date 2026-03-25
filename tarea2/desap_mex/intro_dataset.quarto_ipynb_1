@@ -1,0 +1,200 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# Introducción al dataset\n",
+        "\n",
+        "En esta sección vamos a comenzar a adentrarnos en el dataset, para conocer de manera general la forma en la que está estructurado Comenzaremos importando algunas bibliotecas útiles y cargando el dataset."
+      ],
+      "id": "66ea4792"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "import seaborn as sns\n",
+        "\n",
+        "df = pd.read_csv(\"../data/tot_reg_desap.csv\")\n",
+        "df.head(3)"
+      ],
+      "id": "e816dd67",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Estructura general \n",
+        "\n",
+        "Una vez cargado el dataset, podemos ver que:"
+      ],
+      "id": "1c230e93"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# numero de filas y columnas\n",
+        "filas, columnas = df.shape\n",
+        "print(\"Número de filas:\", filas)\n",
+        "print(\"Número de columnas:\", columnas)\n",
+        "\n",
+        "# nombres de las columnas\n",
+        "print(f\"Nombre de cada columna: {list(df.columns)}\")"
+      ],
+      "id": "90288a9b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Otra característica importante de nuestro conjunto de datos es la *presencia de datos nulos* y el \n",
+        "*tipo de dato* de cada columna."
+      ],
+      "id": "677b90b5"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df.info()"
+      ],
+      "id": "2cdc54e7",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "De esto podemos rescatar que las columnas con datos nulos en orden de mayor a menor son:\n",
+        "\n",
+        "| Núm. Columna | Nombre Columna   | Número de registros con valores nulos |\n",
+        "| ------------ | ---------------- | ------------------------------------- |\n",
+        "| 8            | estatus_busqueda | 27364                                 |\n",
+        "| 10           | fub              | 26050                                 |\n",
+        "| 11           | DC_id            | 9651                                  |\n",
+        "| 12           | fecha_desap      | 6925                                  |\n",
+        "\n",
+        "## Periodo cubierto\n",
+        "\n",
+        "Como vimos una de las columnas que tenemos es `fecha_desap` de tipo `str`, por lo que nos interesa conocer el periodo que cubren los registros. A simple vista podemos notar que las fechas están en formato `DD/MM/AAAA` suponinedo que esto es así en todos los registros, nos gustaría ver que cada fila tiene, en el campo de dicha columna, una cadena de logitud aproximadamete 10 pues son los caracteres necesarios para representar **una fecha**. \n",
+        "\n",
+        "Entonces vamos a ver como es la longitud de las cadenas contenidas en esta columna."
+      ],
+      "id": "19fdbc80"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df['fecha_desap'].str.len().value_counts()"
+      ],
+      "id": "7e8c08e3",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Tan solo con esta revisión podemos ver que únicamente 72,167 registros **podrían** seguir el formato esperado y contener una única fecha. Mientras que en más de 9,651 registros se tienen cadenas mucho más largas de las esperadas.\n",
+        "\n",
+        "Ya que el número de registros con logitud 33,274 es el segundo más alto, se revisó como eran esos datos, llegando así a que en realidad estas 9,651 filas tienen exactamente el mismo valor registrado, el cual consta de una serie de fechas. "
+      ],
+      "id": "c2042051"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "fechas_anomalas = df[df['fecha_desap'].str.len() == 33274]['fecha_desap']\n",
+        "val_anomalas = fechas_anomalas.unique()\n",
+        "print(f\"Valores del campo fecha_desap con longitud 33,274: {val_anomalas}\")"
+      ],
+      "id": "8e39c8b5",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Para obtener la fecha máxima y mínima que hay en nuestro conjunto de datos, vamos a dividir las filas que tienen más de una fecha y las que tienen solo una, para después pasar de tipo `str` a tipo `date`."
+      ],
+      "id": "a0a9606a"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# filas con múltiples fechas\n",
+        "fechas_anomalas = df[df['fecha_desap'].str.len() != 10]['fecha_desap']\n",
+        "# eliminamos las fechas que se duplican\n",
+        "fechas_anomalas = fechas_anomalas.drop_duplicates()\n",
+        "\n",
+        "# filas con solo una fecha\n",
+        "fechas = df[df['fecha_desap'].str.len() == 10]['fecha_desap']\n",
+        "# eliminamos duplicados\n",
+        "fechas = fechas.drop_duplicates()\n",
+        "dates = pd.to_datetime(fechas, errors='coerce', dayfirst=True)\n",
+        "\n",
+        "dates_anomalas = []\n",
+        "\n",
+        "for fechas in fechas_anomalas:\n",
+        "    ls = str(fechas).split(', ')\n",
+        "    dates_anomalas.extend(ls)\n",
+        "\n",
+        "dates_anomalas = pd.to_datetime(dates_anomalas, errors='coerce', dayfirst=True)\n",
+        "\n",
+        "min_global = dates_anomalas.min() if dates_anomalas.min() <= dates.min() else dates.min()\n",
+        "max_global = dates_anomalas.max() if dates_anomalas.max() >= dates.max() else dates.max()\n",
+        "\n",
+        "print(f'Periodo cubierto: Del {min_global.date()} al {max_global.date()}')"
+      ],
+      "id": "1e22ad89",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Unidad de análisis\n",
+        "\n",
+        "En el caso del dataset `tot_reg_desap` cada fila representa una persona desaparecida o no localizada. Siendo los atributos principales:\n",
+        "\n",
+        "* Nombre de la persona desaparecida o no localizada\n",
+        "\n",
+        "* Entidad federativa en la que ocurrió o se reportó la desaparición\n",
+        "\n",
+        "* El estatus de búsqueda\n",
+        "\n",
+        "* El o los Folios Únicos de Búsqueda asociados\n",
+        "\n",
+        "* La fecha en la que ocurrió la desaparición\n",
+        "\n",
+        "* Indicadores de si se encuentra en distintos registros oficiales\n"
+      ],
+      "id": "4420d76c"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/home/arletpb/.local/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

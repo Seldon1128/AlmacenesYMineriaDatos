@@ -1,8 +1,7 @@
 # Introducción al dataset
 
-En esta sección vamos a comenzar a adentrarnos en el dataset, para conocer de manera general la forma en la que está estructurado.
+En esta sección vamos a comenzar a adentrarnos en el dataset, para conocer de manera general la forma en la que está estructurado Comenzaremos importando algunas bibliotecas útiles y cargando el dataset.
 
-Comenzaremos importando algunas bibliotecas útiles y cargando el dataset.
 ```{python}
 import pandas as pd
 import numpy as np
@@ -44,15 +43,18 @@ De esto podemos rescatar que las columnas con datos nulos en orden de mayor a me
 | 12           | fecha_desap      | 6925                                  |
 
 ## Periodo cubierto
-Como pudimos ver una de las columnas que tenemos es *fecha_desap* de tipo `str`, por lo que nos interesa conocer el periodo que cubren los registros.
 
-A simple vista pareciera que las fechas están en formato `DD/MM/AAAA` suponinedo que esto es así, vamos a verificar que la longitud de las cadenas sea la misma o al menos parecida por si hay espacios.
+Como vimos una de las columnas que tenemos es `fecha_desap` de tipo `str`, por lo que nos interesa conocer el periodo que cubren los registros. A simple vista podemos notar que las fechas están en formato `DD/MM/AAAA` suponinedo que esto es así en todos los registros, nos gustaría ver que cada fila tiene, en el campo de dicha columna, una cadena de logitud aproximadamete 10 pues son los caracteres necesarios para representar **una fecha**. 
+
+Entonces vamos a ver como es la longitud de las cadenas contenidas en esta columna.
 
 ```{python}
 df['fecha_desap'].str.len().value_counts()
 ```
 
-Tan solo con esta revisión podemos ver que únicamente 72,167 registros **podrían** seguir el formato esperado. Mientras que más de 9,651 registros no lo hacen. Ya que el número de registros con logitud 33,274 es muy alto, se revisó como eran esos datos, llegando así a que en realidad estas 9,651 filas tienen exactamente el mismo valor registrado, el cual consta de una serie de fechas. 
+Tan solo con esta revisión podemos ver que únicamente 72,167 registros **podrían** seguir el formato esperado y contener una única fecha. Mientras que en más de 9,651 registros se tienen cadenas mucho más largas de las esperadas.
+
+Ya que el número de registros con logitud 33,274 es el segundo más alto, se revisó como eran esos datos, llegando así a que en realidad estas 9,651 filas tienen exactamente el mismo valor registrado, el cual consta de una serie de fechas. 
 
 ```{python}
 fechas_anomalas = df[df['fecha_desap'].str.len() == 33274]['fecha_desap']
@@ -87,4 +89,20 @@ max_global = dates_anomalas.max() if dates_anomalas.max() >= dates.max() else da
 
 print(f'Periodo cubierto: Del {min_global.date()} al {max_global.date()}')
 ```
+
+## Unidad de análisis
+
+En el caso del dataset `tot_reg_desap` cada fila representa una persona desaparecida o no localizada. Siendo los atributos principales:
+
+* Nombre de la persona desaparecida o no localizada
+
+* Entidad federativa en la que ocurrió o se reportó la desaparición
+
+* El estatus de búsqueda
+
+* El o los Folios Únicos de Búsqueda asociados
+
+* La fecha en la que ocurrió la desaparición
+
+* Indicadores de si se encuentra en distintos registros oficiales
 
