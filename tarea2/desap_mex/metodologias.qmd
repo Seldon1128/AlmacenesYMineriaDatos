@@ -9,6 +9,11 @@ Cada integrante del equipo eligió una empresa distinta en la que le gustaría t
 ## Arlet
 
 ## Seldon
+Elegí la empresa Mercedes-Benz, en esta empresa, los proyectos de minería de datos se desarrollan bajo un enfoque estructurado y orientado al negocio que es consistente con la metodología CRISP-DM, la cual permite integrar el análisis de datos con objetivos estratégicos de la empresa. Esto se observa en aplicaciones como la optimización de procesos de manufactura, donde a partir de datos de producción se construyen modelos predictivos para reducir tiempos y mejorar la eficiencia, tal como se muestra en los estudios de Mercedes-Benz Greener Manufacturing (Dhilip Maharish, 2020; Ravindra,  2020; Preetham, 2020).
+
+Asimismo, en iniciativas más recientes como la minería urbana, Mercedes-Benz utiliza datos para identificar, recuperar y reutilizar materiales provenientes de vehículos fuera de uso, lo que refleja una aplicación clara de las fases de comprensión del negocio, modelado y despliegue dentro de CRISP-DM, ahora enfocadas en sostenibilidad y economía circular (Energy Magazine, 2025).
+
+En conjunto, estos casos muestran que la empresa no solo emplea técnicas de modelado y machine learning, sino que sigue un proceso completo de minería de datos que inicia con la definición del problema, continúa con el análisis y preparación de datos, y culmina con la implementación de soluciones en entornos reales. Esto confirma que CRISP-DM es una metodología adecuada para contextos industriales complejos, donde los datos deben traducirse en decisiones operativas y estratégicas con impacto tangible.
 
 :::{.callout-note}
 Entregable: un apartado breve por integrante, sustentado con citas de fuentes confiables.
