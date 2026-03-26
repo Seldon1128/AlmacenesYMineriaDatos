@@ -3,14 +3,80 @@
 A continuación se detallan las actividades concretas que se realizarían en cada fase de la metodología *CRISP-DM*.
 
 ## Business Understanding
+Para esta fase de la metodología *CRISP-DM*, definimos los objetivos que queremos alcanzar con el análisis de los datos que se realizará, al igual que planteamos las preguntas de investigación que servirán como guía hacía el camino que se seguirá para el análisis de los datos. Por último, se definen los criterios de éxito para el proyecto, es decir, las condiciones que deben cumplirse para considerar que el proyecto ha sido exitoso. 
+
+Como *Objetivo Principal*, primero damos un breve contexto de la situación y es que el fenómeno que se busca analizar es un problema social el cual impacta de forma negativa a la sociedad mexicana y deja en cuestionamiento la seguridad pública, por lo que nuestro análisis del dataset busca a contribuir, aportar y ayudar a entender mejor este fenómeno para poder identificar patrones (ya sean demográficos o geográficos) que sean relevantes y utiles a la hora de la toma de decisiones por parte de las autoridades competentes.
+
+Luego, nosotros planteamos las siguientes *Preguntas de Análisis*:\
+1. ¿Cuáles son los estados con mayor número de casos de desaparición?\
+2. ¿Cuál es la distribución de edades de las personas desaparecidas?\
+3. ¿Existen patrones de desaparición relacionados con el género?\
+4. ¿Qué fechas presentan picos en el número de desapariciones?\
+Estos son algunas de las numerosas preguntas que se pueden plantear a partir del dataset, para nuestro análisis nos centraremos en estas cuatro.
+
+Los *Criterios de Éxito* que definimos para este análisis dado el dataset de personas desaparecidas en México, son los siguientes:\
+- Identificar al menos 8 hallazgos relevantes que sean respaldados con evidencia estadística y visual.\
+- Detectar patrones geográficos, temporales y demográficos.\
+- Tratar la integridad ética de los datos, es decir, ser concientes de que no son simples números, sino que representan personas desaparecidas, por lo que se debe manejar la información con respeto y sensibilidad.
 
 ## Data Understanding
+Continuando con la siguiente fase de la metodología usada, se realiza una exploración inicial de los datos (archivo tot_reg_desap.csv) para hacer un diagnóstico de su calidad, estructura y contenido. Esto incluye:\
+- Exploración de las variables disponibles: Identificar variables relevantes para el análisis.\
+- Tomar en cuenta la presencia de datos faltantes.\
+- Registros con multiples fechas.\
+- Posibles inconsistencias en los datos.\
+- Datos repetidos o duplicados.\
+- Datos categóricos inconsistentes en el aspecto de su formato.\
+- entre otros.\
+Como resultado de esta fase, se pudieron detectar algunas inconsistencias dentro del dataset que más adelante se mencionarán.
 
 ## Data Preparation
+Durante esta fase, se llevó a cabo la limpieza, transformación y preparación de los datos del dataset para garantizar que estén en un formato y calidad adecuados para el respectivo análisis.\
+
+Como primer detalle a mencionar, a través de una detección inicial de los datos, se realizo un tratamiento con respecto a registros duplicados encontrados en el dataset. Se realizó cuidadosamente para evitar la eliminación de registros.
+
+Luego, se abordo el tema del manejo de valores faltantes, puesto que identificamos que algunos campos eran representados como "NA" o contenían cadenas vacías. Por lo que se procedió a convertirlos a valores nulos. Ademas para evitar su respectiva eliminación, se opto por reemplazar con la categoria de "Desconocido" para mantener y preservar la integridad de la información y evitar sesgos en el análisis posterior.
+
+Después, realizamos una conversión de formatos, pasando de tener la variable "fecha_desap" al tipo de dato "datetime". También se normalizaron las variables categóricas para asegurar que los valores sean consistentes y estén en un formato adecuado para el análisis, particularmente las columnas "nombrecompleto", "entidad_desap", "estatus_busqueda".
+
+Como ultimos detalles a mencionar, se verifico que los datos fueran validos, comprobando aspectos como que no existieran fechas futuras, verificar que el identificador "fub" no estuviera asociado a múltiples registros (personas), si había registros con múltiples fechas, entonces se optaba por reemplazar por la variable de "FOLIO_DESCONOCIDO" para evitar la eliminación de registros.
+
+Y por ultimo a realizar, se seleccionaron las variables relevantes para el análisis, en donde se destacaron las siguientes:\
+- "nombrecompleto": Para identificar a cada persona desaparecida.\
+- "entidad_desap": Para analizar la distribución geográfica de las desapariciones.\
+- "estatus_busqueda": Para entender el estado actual de cada caso.\
+- "fecha_desap": Para analizar la distribución temporal de las desapariciones.\
+
+Todo esto anterior derivo en un dataset limpio, transformado y preparado para el análisis posterior, con el cual se podrán responder las preguntas de análisis planteadas en la fase de Business Understanding.
+
 
 ## Modelling
+En esta fase, se definieron las técnicas de análisis de datos que nos permitirán responder a las preguntas planteadas previamente, y se aplicaron estas técnicas al dataset preparado en la fase anterior. \
+
+Recordando que nuestro objetivo tiene fines exploratorios, es decir, no buscamos construir modelos predictivos, sino más bien obtener insights a partir de los datos, por lo que el enfoque se centra en el análisis estadístico descriptivo y la visualización de datos. Para ello se usaron las siguientes técnicas de análisis:\
+- Análisis de frecuencia: Para identificar los estados con mayor número de casos de desaparición.\
+- Análisis de distribución: Para comprender la distribución de personas desaparecidas por el estado de desaparición.\
+- Análisis de correlación: Para explorar posibles patrones relacionados con el estado de desaparición y la fecha del reporte.\
+- Análisis de tendencias temporales: Para identificar patrones en la distribución temporal de las desapariciones.\
+- Visualización de datos: Para representar gráficamente los resultados obtenidos y facilitar su interpretación.\
+Como extra, también se pueden aplicar técnicas como Clustering para identificar patrones existentes entre estados o periodos de tiempo.\
+
+A partir de todo esto planteando, podemos obtener insights relevantes que nos permitan responder a las preguntas de análisis planteadas en la fase de Business Understanding, y así contribuir a una mejor comprensión del fenómeno de las desapariciones en México.
+
 
 ## Evaluation
+Como su nombre indica, en esta fase se llevará a cabo la evaluación de los resultados obtenidos luego de aplicar las técnicas de análisis en la fase de "Modelling", determinar si los hallazgos obtenidos son consistentes con los objetivos planteados en la fase de Business Understanding, si responden adecuadamente a las preguntas de análisis, si se cumplen los criterios de éxito definidos. Todo esto a partir de la interpretación que hayamos podido obtener nosotros mismos a partir de los resultados obtenidos, haciendo uso de gráficos y tablas para facilitar la interpretación de los resultados de una manera más visual y comprensible, haciendo uso de boxplots, histogramas, gráficos de barras, entre otros. Ademas de realizar un análisis crítico de los resultados obtenidos, considerando posibles limitaciones o sesgos en los datos que puedan haber afectado los resultados, y proponiendo posibles mejoras para futuros análisis.
 
 ## Deployment
+En esta última fase, se realiza la presentación de un reporte formal con los hallazgos obtenidos por nuestro equipo de acuerdo al dataset de personas desaparecidas en México. Este reporte (realizado en formato .qmd) especifica los siguientes aspectos:\
+- La planteación de nuestros objetivos, preguntas de análisis y criterios para considerar el proyecto como exitoso.\
+- Una descripción detallada de nuestro dataset. Desde su estructura, calidad y contenido, hasta la limpieza y transformación de los datos realizada.\
+- Resultados obtenidos luego de aplicar las técnicas de análisis estadístico y visualización, con una interpretación detallada de cada uno de los 8 hallazgos obtenidos.\
+- Un análisis de las limitaciones del proyecto con respecto a como se nos presentó el dataset, y nuestra respectiva propuesta del mismo dataset mejorado para futuros análisis.\
+- Conclusiones finales de todo el proceso realizado.\
+- Presentar un lenguaje claro, conciso y accesible para que cualquier persona pueda entender los resultados obtenidos, sin necesidad de tener conocimientos técnicos avanzados en análisis de datos o estadística.\
+- Poder garantizar que sea reproducible, es decir, que cualquier persona pueda seguir los pasos realizados mediante el código proporcionado para obtener los mismos resultados, lo cual es fundamental para la transparencia y la validación de los hallazgos obtenidos.\
 
+---
+
+Estas son las 6 fases de la metodología *CRISP-DM* aplicadas a nuestro respectivo análisis del dataset de personas desaparecidas en México, cada una de estas fases es fundamental para garantizar un análisis estructurado, riguroso y efectivo que nos permita obtener insights relevantes y contribuir a una mejor comprensión del fenómeno de las desapariciones en México.
