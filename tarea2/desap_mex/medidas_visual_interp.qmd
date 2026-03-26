@@ -1,1 +1,440 @@
+---
+title: "Medidas"
+format: html
+jupyter: python3
+---
+
 # Cálculo de medidas con visualizaciones e interpretación
+
+En esta sección se calculan las medidas de localización, dispersión, heterogeneidad y concentración, acompañadas de visualizaciones para derivar una interpretación a cada una de estas dado nuestro dataset de personas desaparecidas en México. Cada medida es importante puesto que nos permite comprender diferentes aspectos de la distribución de los datos, lo cual es fundamental para responder a las preguntas de análisis planteadas en la fase de Business Understanding. Para ello hacemos uso de bibliotecas de Python como Pandas, NumPy, Matplotlib y Seaborn para el cálculo de las medidas y la creación de visualizaciones que nos ayuden a interpretar los resultados obtenidos.
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Cargar dataset
+df = pd.read_csv("../data/tot_reg_desap.csv")
+
+# Convertir fecha
+df['fecha_desap'] = pd.to_datetime(df['fecha_desap'], errors='coerce', dayfirst=True)
+
+# Extraer año
+df['anio_desap'] = df['fecha_desap'].dt.year
+
+df.head()
+```
+
+Una vez cargado el dataset, se procede a calcular las medidas estadísticas descriptivas. A continuación se detallan cada una de estas medidas, acompañadas de visualizaciones e interpretaciones correspondientes.
+
+
+## Medidas de Localización
+
+Dado que el dataset presentado no contiene variables numéricas continuas como edad o ingreso, las medidas de localización se adaptan al análisis de variables categóricas mediante el uso de la **moda**.
+
+---
+
+### Código
+
+```{python}
+# Moda (valor más frecuente)
+
+moda_estado = df['entidad_desap'].mode()[0]
+moda_estatus = df['estatus_busqueda'].mode()[0]
+moda_anio = df['anio_desap'].mode()[0]
+
+print("Estado más frecuente:", moda_estado)
+print("Estatus más frecuente:", moda_estatus)
+print("Año más frecuente:", moda_anio)
+```
+
+---
+
+### Gráfica 1: Estados con más desapariciones
+
+```{python}
+plt.figure()
+df['entidad_desap'].value_counts().head(10).plot(kind='bar')
+plt.title("Top 10 estados con más desapariciones")
+plt.xlabel("Estado")
+plt.ylabel("Número de casos")
+plt.xticks(rotation=45)
+plt.show()
+```
+
+---
+
+### Gráfica 2: Estatus de búsqueda
+
+```{python}
+plt.figure()
+df['estatus_busqueda'].value_counts().plot(kind='bar')
+plt.title("Distribución del estatus de búsqueda")
+plt.xlabel("Estatus")
+plt.ylabel("Número de casos")
+plt.xticks(rotation=45)
+plt.show()
+```
+
+---
+
+### Gráfica 3: Tendencia por año
+
+```{python}
+df_anio = df['anio_desap'].value_counts().sort_index()
+
+plt.figure()
+df_anio.plot()
+plt.title("Desapariciones por año")
+plt.xlabel("Año")
+plt.ylabel("Número de casos")
+plt.show()
+```
+
+---
+
+## Medidas de Variabilidad
+
+Estas medidas nos permiten analizar qué tan dispersos o concentrados se encuentran nuestros datos del dataset, ayudandonos a identificar diferencias entre estados, estatus de búsqueda y fechas de desaparición.
+
+Las principales medidas utilizadas son:
+
+- **Rango**: diferencia entre el valor máximo y mínimo.
+  
+  $$
+  R = \max(x_i) - \min(x_i)
+  $$
+
+- **Varianza**: mide la dispersión promedio respecto a la media.
+  
+  $$
+  \sigma^2 = \frac{1}{n} \sum_{i=1}^{n} (x_i - \mu)^2
+  $$
+
+- **Desviación estándar**: raíz cuadrada de la varianza, expresa la dispersión en las mismas unidades de los datos.
+  
+  $$
+  \sigma = \sqrt{\sigma^2}
+  $$
+
+
+### Variabilidad por entidad de desaparición
+```{python}
+# Conteo de desapariciones por estado
+conteo_estados = df['entidad_desap'].value_counts()
+
+# Medidas
+rango = conteo_estados.max() - conteo_estados.min()
+varianza = conteo_estados.var()
+desv_std = conteo_estados.std()
+
+print("Entidad:")
+print("Rango:", rango)
+print("Varianza:", varianza)
+print("Desviación estándar:", desv_std)
+print("\n")
+``` 
+
+El rango de 11,831 indica que hay una gran diferencia entre el estado con más casos y el que menos tiene. En conjunto con la desviación estándar, se observa una alta dispersión entre entidades.
+
+### Variabilidad por estatus de búsqueda
+```{python}
+conteo_estatus = df['estatus_busqueda'].value_counts()
+
+rango_estatus = conteo_estatus.max() - conteo_estatus.min()
+varianza_estatus = conteo_estatus.var()
+std_estatus = conteo_estatus.std()
+
+print("Estatus:")
+print("Rango:", rango_estatus)
+print("Varianza:", varianza_estatus)
+print("Desviación estándar:", std_estatus)
+print("\n")
+``` 
+
+El rango de 22,861 muestra una diferencia muy amplia entre los estatus con más y menos casos. La alta desviación estándar confirma que los casos se concentran fuertemente en ciertos estatus.
+
+### Variabilidad por año de desaparición
+```{python}
+conteo_anio = df['anio_desap'].value_counts()
+
+rango_anio = conteo_anio.max() - conteo_anio.min()
+varianza_anio = conteo_anio.var()
+std_anio = conteo_anio.std()
+
+print("Año:")
+print("Rango:", rango_anio)
+print("Varianza:", varianza_anio)
+print("Desviación estándar:", std_anio)
+``` 
+
+El rango de 6,740 indica que hay años con muchos más casos que otros. La dispersión refleja que la distribución de desapariciones varía significativamente a lo largo del tiempo.
+
+---
+
+## Medidas de Heterogeneidad
+
+Entender la heterogeneidad en nuestro dataset es crucial para identificar patrones y diferencias entre los casos de desaparición. Para esto, se utilizan medidas como la **entropía** y el **índice de Gini**, que nos permiten evaluar la diversidad y desigualdad en la distribución de los datos.  
+Estas medidas nos ayudan a ver la diversidad en la distribución de los datos, una entropía o Gini alto indica que hay diversidad alta en los casos de desaparición, pero si estas medidas son bajas entonces indica que los casos estan concentrados en pocas categorías.  
+Recordando las formulas de estas medidas, la entropía se calcula como:
+$$E = -\sum_{i=1}^{k} p_i \ln(p_i)$$
+Y la fórmula del índice de Gini es:
+$$G = 1 - \sum_{i=1}^{k} p_i^2$$
+
+---
+
+Calculamos estas medidas para las mismas variables categóricas de antes:
+
+```{python}
+def calcular_heterogeneidad(columna, nombre_columna):
+    conteo = columna.value_counts()
+    total = conteo.sum()
+    p_i = conteo / total
+
+    # Calcular entropía
+    entropia = -np.sum(p_i * np.log(p_i))
+
+    # Calcular índice de Gini
+    gini = 1 - np.sum(p_i ** 2)
+
+    # Max entropía y Gini
+    k = len(conteo)
+    max_entropia = np.log(k)
+    max_gini = 1 - (1 / k)
+
+    print(f"Heterogeneidad para {nombre_columna}:")
+    print(f"Categorías: {k}")
+    print(f"Entropía: {entropia:.4f} (máxima: {max_entropia:.4f})")
+    print(f"Índice de Gini: {gini:.4f} (máximo: {max_gini:.4f})")
+    print("\n")
+    
+calcular_heterogeneidad(df['entidad_desap'], 'Entidad de desaparición')
+calcular_heterogeneidad(df['estatus_busqueda'], 'Estatus de búsqueda')
+calcular_heterogeneidad(df['anio_desap'], 'Año de desaparición')
+```
+
+Interpretación:
+
+Los resultados obtenidos muestran que la variable entidad de desaparición presenta una entropía elevada cercana a su valor máximo, así como un índice de Gini alto. Esto indica que los casos están distribuidos entre múltiples entidades, reflejando una alta heterogeneidad, aunque con cierta desigualdad en la concentración de casos.
+
+En el caso del estatus de búsqueda, la entropía es considerablemente menor en relación con su máximo, lo que sugiere una menor diversidad, es decir, los casos tienden a concentrarse en ciertas categorías específicas.
+
+Por otro lado, la variable año de desaparición muestra nuevamente una alta heterogeneidad, lo que indica que los casos están distribuidos a lo largo de múltiples años, sin concentrarse exclusivamente en un periodo específico, aunque pueden observarse variaciones temporales.
+
+---
+
+### Gráfica 4: Distribución ordenada de proporciones por entidad de desaparición
+
+```{python}
+# Obtener proporciones ordenadas (de menor a mayor)
+proporciones_estado = df['entidad_desap'].value_counts(normalize=True).sort_values()
+
+plt.figure()
+plt.scatter(range(len(proporciones_estado)), proporciones_estado)
+plt.title("Dispersión de proporciones por entidad")
+plt.xlabel("Categorías")
+plt.ylabel("Proporción")
+plt.show()
+```
+
+---
+
+### Gráfica 5: Dispersión de proporciones por estatus de búsqueda
+
+```{python}
+# Obtener proporciones ordenadas (de menor a mayor)
+proporciones_estatus = df['estatus_busqueda'].value_counts(normalize=True).sort_values()
+
+# Gráfica de dispersión
+plt.figure()
+plt.scatter(range(len(proporciones_estatus)), proporciones_estatus)
+plt.title("Dispersión de proporciones por estatus de búsqueda")
+plt.xlabel("Categorías")
+plt.ylabel("Proporción")
+plt.show()
+```
+
+---
+    
+### Gráfica 6: Dispersión de proporciones por año de desaparición
+
+```{python}
+# Obtener proporciones ordenadas (de menor a mayor)
+proporciones_anio = df['anio_desap'].value_counts(normalize=True).sort_values()
+
+# Gráfica de dispersión
+plt.figure()
+plt.scatter(range(len(proporciones_anio)), proporciones_anio)
+plt.title("Dispersión de proporciones por año de desaparición")
+plt.xlabel("Años ordenados")
+plt.ylabel("Proporción")
+plt.show()
+```
+---
+
+## Medidas de Concentración
+
+Las medidas de concentración nos permiten identificar qué tan acumulados están los casos en ciertas categorías, es decir, si pocas entidades o periodos concentran una gran proporción de los casos de desaparición. A diferencia de la heterogeneidad, que mide diversidad, la concentración se enfoca en la **desigualdad en la distribución**.
+
+Una de las principales herramientas para analizar la concentración es la **curva de Lorenz**, la cual representa gráficamente la proporción acumulada de los casos frente a la proporción acumulada de las unidades (por ejemplo, entidades o años). Si la distribución fuera completamente uniforme, la curva coincidiría con la diagonal de igualdad perfecta. Sin embargo, mientras más se aleje de esta diagonal, mayor será la concentración de los datos en pocas categorías.
+
+De manera formal, la curva de Lorenz se construye a partir de:
+
+$$
+F_i = \frac{i}{n}
+$$
+
+$$
+Q_i = \sum_{j=1}^{i} p_j
+$$
+
+donde:
+$F_i$ es la proporción acumulada de unidades (eje X), $Q_i$ es la proporción acumulada de los casos (eje Y), $p_j$ representa la proporción de cada categoría ordenada de menor a mayor, $n$ es el número total de categorías.
+
+Además, para cuantificar esta concentración se utiliza el **índice de concentración (R)**, el cual mide la diferencia entre la distribución observada y una distribución perfectamente uniforme.
+
+Su fórmula es:
+
+$$
+R = \frac{\sum (F_i - Q_i)}{\sum F_i}
+$$
+
+Este índice toma valores entre 0 y 1: Valores cercanos a **0** indican una distribución uniforme (baja concentración). Valores cercanos a **1** indican una alta concentración, donde pocas categorías concentran la mayoría de los casos.
+
+En conjunto, la curva de Lorenz y el índice de concentración permiten analizar tanto de forma visual como cuantitativa la desigualdad en la distribución de los casos de desaparición.
+
+
+---
+
+### Gráfica 7: Curva de Lorenz (Entidad de desaparición)
+
+```{python}
+# Conteo por entidad
+conteo = df['entidad_desap'].value_counts().sort_values()
+
+# Proporciones
+p_i = conteo / conteo.sum()
+
+# Acumulados
+acumulado = p_i.cumsum()
+
+# Eje X (proporción acumulada de categorías)
+n = len(acumulado)
+F_i = np.arange(1, n+1) / n
+
+# Curva de Lorenz
+plt.figure()
+plt.plot(F_i, acumulado, label='Curva de Lorenz')
+plt.plot([0,1], [0,1], linestyle='--', label='Igualdad perfecta')
+
+plt.title("Curva de Lorenz - Entidad de desaparición")
+plt.xlabel("Proporción acumulada de entidades")
+plt.ylabel("Proporción acumulada de casos")
+plt.legend()
+plt.tight_layout()
+plt.show()
+```
+
+### Índice de concentración (Entidad de desaparición)
+
+```{python}
+# Índice de concentración R
+R = np.sum(F_i - acumulado) / np.sum(F_i)
+
+print(f"Índice de concentración (Entidad): {R:.4f}")
+```
+
+El índice de concentración de 0.5098 indica una concentración media de los casos entre las entidades.
+
+Esto significa que, aunque los casos están distribuidos en varios estados, una parte importante se concentra en algunas entidades específicas.
+
+La curva de Lorenz confirma este comportamiento, ya que se aleja de la línea de igualdad perfecta, mostrando que la distribución no es uniforme.
+
+### Gráfica 8: Curva de Lorenz  (Estatus de búsqueda)
+
+```{python}
+# Conteo por estatus
+conteo_estatus = df['estatus_busqueda'].value_counts().sort_values()
+
+# Proporciones
+p_i_estatus = conteo_estatus / conteo_estatus.sum()
+
+# Acumulado
+acumulado_estatus = p_i_estatus.cumsum()
+
+# Eje X
+n = len(acumulado_estatus)
+F_i_estatus = np.arange(1, n+1) / n
+
+# Curva de Lorenz
+plt.figure()
+plt.plot(F_i_estatus, acumulado_estatus, label='Curva de Lorenz')
+plt.plot([0,1], [0,1], linestyle='--', label='Igualdad perfecta')
+
+plt.title("Curva de Lorenz - Estatus de búsqueda")
+plt.xlabel("Proporción acumulada de categorías")
+plt.ylabel("Proporción acumulada de casos")
+plt.legend()
+plt.tight_layout()
+plt.show()
+```
+
+### Índice de concentración (Estatus de Búsqueda)
+
+```{python}
+# Índice de concentración R
+R_estatus = np.sum(F_i_estatus - acumulado_estatus) / np.sum(F_i_estatus)
+
+print(f"Índice de concentración (Estatus): {R_estatus:.4f}")
+```
+
+El índice de concentración obtenido para el estatus de búsqueda indica una concentración moderada de los casos en ciertas categorías. Esto significa que algunos estatus concentran una proporción mayor de los registros, mientras que otros tienen menor participación.
+
+La curva de Lorenz muestra una desviación respecto a la línea de igualdad perfecta, lo que confirma que la distribución no es completamente uniforme, aunque la concentración es menor en comparación con la observada en la variable de año de desaparición.
+
+### Gráfica 9: Curva de Lorenz (Año de desaparición)
+
+```{python}
+# Conteo por año
+conteo_anio = df['anio_desap'].value_counts().sort_values()
+
+# Proporciones
+p_i_anio = conteo_anio / conteo_anio.sum()
+
+# Acumulado
+acumulado_anio = p_i_anio.cumsum()
+
+# Eje X
+n = len(acumulado_anio)
+F_i_anio = np.arange(1, n+1) / n
+
+# Curva de Lorenz
+plt.figure()
+plt.plot(F_i_anio, acumulado_anio, label='Curva de Lorenz')
+plt.plot([0,1], [0,1], linestyle='--', label='Igualdad perfecta')
+
+plt.title("Curva de Lorenz - Año de desaparición")
+plt.xlabel("Proporción acumulada de años")
+plt.ylabel("Proporción acumulada de casos")
+plt.legend()
+plt.tight_layout()
+plt.show()
+```
+
+### Índice de concentración (Año de desaparición)
+
+```{python}
+# Índice de concentración R
+R_anio = np.sum(F_i_anio - acumulado_anio) / np.sum(F_i_anio)
+
+print(f"Índice de concentración (Año): {R_anio:.4f}")
+```
+
+El índice de concentración de 0.7440 refleja una alta concentración de los casos en ciertos años.
+
+Esto implica que las desapariciones no están distribuidas de manera uniforme en el tiempo, sino que existen periodos donde se concentran significativamente más casos.
+
+La curva de Lorenz muestra una fuerte desviación respecto a la diagonal, lo que evidencia esta desigualdad temporal.
+
+---
