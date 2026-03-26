@@ -1,1 +1,199 @@
 # Limpieza del dataset y generación del CSV limpio
+
+Empezaremos la limpieza de nuestro dataset con los valores duplicados, ya que si hay registros repetidos, se puede alterar los porcentajes para cuando llegue el momento de calcular los valores faltantes.
+
+## Detección y eliminación de valores duplicados (si existen)
+
+**El criterio** utilizado para determinar si un registro es un registro duplicado es que sea un duplicado exacto, es decir, que todas las columnas sean identicas.  
+Además, el dataset cuenta con las columnas `DC_id` y `fub` que podrían ser tratados como identificadores únicos, por lo que si hay registros duplicados, estos deberían tener el mismo valor en estas columnas.  
+**La acción** tomada es identicar estos registros duplicados y eliminarlos manteniendo solamente uno de estos registros.  
+```{python}
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv("../data/tot_reg_desap.csv", sep=",")
+
+# Buscamos los registros duplicados
+duplicados = df.duplicated().sum()
+print(f"Número de registros duplicados: {duplicados}")
+```
+
+En este caso, no se encontraron registros duplicados, pero se encontraron registros con el mismo nombre completo, lo cual es importante revisar para determinar si se trata de casos de personas con el mismo nombre o si se trata de registros duplicados o mal registrados.
+
+```{python}
+# Buscamos registros con el mismo nombrecompleto para revisar si hay casos de personas con el mismo nombre o si se trata de registros duplicados
+nom_duplicados = df.duplicated(subset=['nombrecompleto']).sum()
+print(f"Registros con nombre duplicado encontrados: {nom_duplicados}")
+
+# Filtramos las filas que comparten nombre con otra 
+df_nombres_repetidos = df[df.duplicated(subset=['nombrecompleto'], keep=False)]
+
+# Se ordena por nombre para que queden juntos los repetidos
+df_nombres_repetidos = df_nombres_repetidos.sort_values(by=['nombrecompleto', 'fecha_desap'])
+
+columnas_revision = ['nombrecompleto', 'entidad_desap', 'fecha_desap']
+print(df_nombres_repetidos[columnas_revision].head(13))
+```
+
+Como vemos, hay casos de personas con el mismo nombre, y con otros datos iguales pero con alguna variación en alguna de las columnas,
+ por lo cual *pandas* no los considera como registros duplicados, puesto que el registro no es exactamente igual, pero dado que los registros comparten varias columnas iguales y el mismo nombre, en algunas podemos inferir que se trata de la misma persona, por lo que se decidió seguir el siguiente criterio para determinar si se trata de la misma persona o no:  
+
+<center>
+Un registro será considerado como un registro de la misma persona únicamente si coinciden en cuatro columnas: `nombrecompleto`, `entidad_desap`, `fub` y `fecha_desap`.  
+En cualquier otro caso aunque sea el mismo nombre pero no coincida exactamente en estas cuatro columnas, se considerará como un registro de una persona diferente o un caso separado para evitar la pérdida de información de posibles víctimas.  
+</center>
+
+Se eligió este criterio porque no podemos asumir que se trata de la misma persona basandonos únicamente en el nombre y alguna otra columna, ya que podría tratarse de casos diferentes de personas que se llaman igual, además tomando en cuenta que el *dataset* contiene valores nulos.  
+Tratandose de un tema tan delicado como lo es el de las **personas desaparecidas**, eliminar un falso duplicado significaría borrar el registro de una persona desaparecida, lo cual es un error no solo para el análisis sino también etíco.  
+De este modo, la acción tomada es eliminar únicamente los registros que coincidan exactamente en las cuatro columnas mencionadas en el criterio, manteniendo solamente uno de estos registros por persona, si es que hay un registro que comparte el nombre completo pero no coincide en alguna de las otras columnas, se mantendrá ambos registros para evitar la pérdida de información.
+
+```{python}
+# Buscamos y eliminamos los registros que cumplan con nuestro criterio de duplicados
+duplicados_criterio = df.drop_duplicates(subset=['nombrecompleto', 'entidad_desap', 'fub', 'fecha_desap'], keep='first')
+
+# Verificamos el número de registros después de eliminar los duplicados
+registros_eliminados = len(df) - len(duplicados_criterio)
+print(f"Número de registros originales: {len(df)}")
+print(f"Número de registros eliminados por duplicados según el criterio: {registros_eliminados}")
+print(f"Número de registros después de eliminar duplicados: {len(duplicados_criterio)}")
+```
+
+## Valores faltantes
+
+Dado que ya eliminamos los registros duplicados, ahora podemos revisar los valores faltantes, ya que antes si había registros duplicados se podía alterar el porcentaje de valores faltantes.  
+
+<h4> Columnas y porcentaje de valores faltantes </h4>
+Al inspeccionar un poco el dataset, pudimos notar que hay valores faltantes que estan representados por el string "NA", entonces para que *pandas* los reconozca como valores faltantes, vamos a reemplazar estos valores por verdaderos valores nulos para así poder identificar de manera correcta los valores faltantes.
+
+```{python}
+# Creamos una copia del dataset sin los duplicados para seguir con la limpieza
+df_limpio = duplicados_criterio.copy()
+
+# Reemplazamos los valores "NA" y espacios en blanco por valores nulos
+df_limpio.replace(r'^\s*NA\s*$', np.nan, regex=True)
+df_limpio.replace(r'^\s*$', np.nan, regex=True)
+
+# Verificamos el número de faltantes y el porcentaje de faltantes por columna
+total_faltantes = df_limpio.isnull().sum()
+porcentaje_faltantes = (total_faltantes / len(df_limpio)) * 100
+
+faltantes_df = pd.DataFrame({'Total Faltantes': total_faltantes, 'Porcentaje Faltantes': porcentaje_faltantes})
+
+faltantes_df = faltantes_df[faltantes_df['Total Faltantes'] > 0].sort_values(by='Porcentaje Faltantes', ascending=False)
+print(faltantes_df)
+```
+
+<h4> Tratamiento de valores faltantes </h4>
+La **decisión** tomada para tratar los valores faltantes es **no** eliminar ningún registro con valores faltantes y en su lugar rellenar los valores faltantes con el string "Desconocido".  
+El **por qué** de esta decisión es dado que estamos tratando con un tema tan delicado como lo es el de las personas desaparecidas, siguiendo el mismo razonamiento que con los registros duplicados, eliminar un registro con valores faltantes significaría borrar el registro de una persona desaparecida solamente porque no registraron algún dato.  
+Además, no podemos imputar los valores faltantes con algún valor específico ya que esto puede alterar el análisis de manera errónea ya que no tenemos la información necesaria para imputar estos valores de manera correcta, ni podemos tomar la libertad de mentir sobre los datos de las personas desaparecidas.
+
+```{python}
+# Rellenamos los valores faltantes con el string "Desconocido"
+df_limpio = df_limpio.fillna("Desconocido")
+
+# Verificamos que ya no haya valores faltantes
+total_faltantes_despues = df_limpio.isnull().sum()
+print(f"Total de valores faltantes después de rellenar: {total_faltantes_despues.sum()}")
+```
+
+## Tipos de datos correctos
+
+Para que podamos realizar un análisis correcto, vamos a asegurarnos de que cada columna tenga el tipo de dato correcto.  
+Empezando con la columna `fecha_desap`, esta debe ser de tipo `datetime` para poder realizar el análisis de fechas correctamente, por lo que vamos a convertir esta columna al tipo de dato correcto, pero al observar los datos del dataset, nos dimos cuenta que hay un error grave en la información de algunos registros en esta columna, ya que hay registros que contienen 
+múltiples fechas separadas por comas, desde celdas con dos fechas hasta celdas con decenas de fechas.  
+Por lo tanto, el **criterio** tomado para tratar esta situación será que siguiendo el mismo razonamiento que en las secciones anteriores, dado que no podemos alterar ni inventar información sobre los casos de las personas desaparecidas, no podemos tomar la libertad de elegir cualquiera de estas fechas para cada registro, por lo que se decidió que si un registro contiene 
+múltiples fechas lo tomaremos como un valor faltante y se convertirá a un tipo de dato nulo de tiempo, pero si solo contiene una fecha se convertirá al tipo de dato `datetime`.  
+Esto es porque si nos quedaramos con la primera o última fecha, podríamos estar asignando una fecha que no corresponde a la fecha real de la desaparición de la persona y tampoco podemos mantener el string con las múltiples fechas porque no es un formato correcto para el análisis.
+
+```{python}
+# Función para validar y convertir la fecha
+def validar_fecha(fecha):
+    # Si la fecha es nula, es "Desconocido" o contiene múltiples fechas se convierte en un valor faltante
+    if pd.isna(fecha) or fecha == "Desconocido":
+        return pd.NaT
+
+    fecha = str(fecha).strip()
+    if ',' in fecha:
+        return pd.NaT
+
+    return pd.to_datetime(fecha, format='%d/%m/%Y', errors='coerce')
+
+# Aplicamos la función a la columna fecha_desap
+df_limpio['fecha_desap'] = df_limpio['fecha_desap'].apply(validar_fecha)
+
+print(f"Número de registros con fechas múltiples convertidos a nulos: {df_limpio['fecha_desap'].isna().sum()}")
+print(f"Número de registros con fechas convertidas exitosamente: {df_limpio['fecha_desap'].notna().sum()}")
+```
+
+<h5> Columnas con tipo numérico </h5>
+Las columnas con tipo de dato numérico son: `rnpdno_json`, `pre_rnped`, `rnped`, `rnpdno_csv`, `bg_1` y `bg_2`, con valores (0 o 1) por lo que vamos a asegurar su formato correcto.
+
+```{python}
+columnas = ['rnpdno_json', 'pre_rnped', 'rnped', 'rnpdno_csv', 'bg_1', 'bg_2']
+for columna in columnas:
+    df_limpio[columna] = pd.to_numeric(df_limpio[columna], errors='coerce').fillna(0).astype(int)
+
+print(df_limpio[columnas].dtypes)
+```
+
+## Normalización de categorías
+
+Para las columnas de tipo string vamos a hacerles una normalización, en las columnas `nombrecompleto`, `entidad_desap` y `estatus_busqueda`, ya que es posible que hayan inconsistencias en la forma de escribir los nombres, estados o estatus de búsqueda, por lo que primero vamos a convertir todo el texto a mayúsculas, luego eliminaremos los espacios en blanco al inicio y al final 
+del texto, también eliminaremos los espacios múltiples en el texto por un solo espacio y por último eliminaremos los caracteres especiales y acentos para evitar inconsistencias en los nombres, estados o estatus de búsqueda.
+
+```{python}
+columnas_string = ['nombrecompleto', 'entidad_desap', 'estatus_busqueda']
+for columna in columnas_string:
+    df_limpio[columna] = df_limpio[columna].astype(str).str.upper().str.strip()
+    df_limpio[columna] = df_limpio[columna].str.replace(r'\s+', ' ', regex=True)
+    df_limpio[columna] = df_limpio[columna].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+
+print(df_limpio[columnas_string].head())
+```
+
+## Validaciones
+
+Para terminar con la limpieza del dataset, vamos a validar que no hayan inconsistencias en los datos, así que vamos a revisar que no hayan más errores, para lo cual vamos a hacer dos validaciones:  
+1. Validar que no hayan fechas imposibles, es decir, que no existan fechas de desaparición del futuro.
+2. Comprobar que no hayan registros con el mismo `fub` pero con diferentes personas, ya que esto podría indicar un error en el registro de los datos.
+
+<h5> Validación de fechas imposibles </h5>
+Si hay fechas de desaparición del futuro, entonces tomaremos estas fechas como valores faltantes, ya que no podemos asumir una fecha de desaparición incorrecta, por lo que se convertirá a un tipo de dato nulo de tiempo.
+
+```{python}
+fecha_actual = pd.to_datetime('today')
+
+fechas_imposibles = df_limpio[df_limpio['fecha_desap'] > fecha_actual]['fecha_desap']
+print(f"Número de registros con fechas de desaparición del futuro: {len(fechas_imposibles)}")
+
+# Convertimos las fechas imposibles a valores faltantes
+if len(fechas_imposibles) > 0:
+    df_limpio.loc[df_limpio['fecha_desap'] > fecha_actual, 'fecha_desap'] = pd.NaT
+```
+
+<h5> Validación de registros con el mismo fub pero con diferentes personas </h5>
+Si hay registros con el mismo `fub` pero con diferentes personas, entonces se reemplazará el valor de `fub` por "FOLIO DESCONOCIDO" para evitar inconsistencias en los datos, ya que no podemos asumir de quien es el folio.
+
+```{python}
+# Contamos cuantos nombres completos únicos hay por cada fub diferente de "Desconocido" y 
+df_fubs = df_limpio[df_limpio['fub'] != "Desconocido"]
+comprobar_fub = df_fubs.groupby('fub')['nombrecompleto'].nunique()
+
+fubs_con_diferentes_nombres = comprobar_fub[comprobar_fub > 1]
+print(f"Número de fubs con diferentes nombres completos: {len(fubs_con_diferentes_nombres)}")
+
+if len(fubs_con_diferentes_nombres) > 0:
+    df_limpio.loc[df_limpio['fub'].isin(fubs_con_diferentes_nombres.index), 'fub'] = "FOLIO DESCONOCIDO"
+```
+
+## Generar el CSV limpio
+Ya que hemos realizado toda la limpieza del dataset, entonces vamos a generar un nuevo archivo CSV con el dataset limpio para poder realizar el análisis de manera correcta.
+
+```{python}
+ruta_salida = "../data/tot_reg_desap_limpio.csv"
+df_limpio.to_csv(ruta_salida, index=False, encoding='utf-8')
+
+print(f"Archivo CSV limpio generado en: {ruta_salida}")
+print(f"Número de registros en el dataset limpio: {len(df_limpio)}")
+```
