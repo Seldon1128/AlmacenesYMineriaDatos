@@ -13,7 +13,7 @@ df = pd.read_csv("../data/tot_reg_desap.csv")
 
 Para comprender el significado de las columnas que conforman nuestro conjunto de datos 
 es necesario tomar en cuenta que la forma en la que se registran los datos de personas desaparecidas 
-en nuestro país a ha cambiado en varias ocasiones. Como se muestra en las páginas 20 a 25 de @datacivica2024, de forma general
+en nuestro país ha cambiado en varias ocasiones. Como se muestra en las páginas 20 a 25 de @datacivica2024, de forma general
 los registros han tenido la siguiente evolución:
 
 1. Registro Nacional de Datos de Personas Extraviadas o Desaparecidas (**RNPED**)
@@ -37,7 +37,7 @@ los registros han tenido la siguiente evolución:
     - ¿Descargable? Después del 9 de julio se elimina la posibilidad de descarga de las tablas generadas a partir de las gráficas
     - ¿Existente actualmente? Si (nueva versión)
     - Descripción: **Plataforma** que centraliza y visualiza **agregados de registros** de personas deaparecidas.
-    - Fuentes: Particulares, autoridades de la Federación y de las enidades federativas.
+    - Fuentes: Particulares, autoridades de la Federación y de las entidades federativas.
     
 4.  **Versión pública** del RNPDNO
     - Año de publicación: 2023
@@ -49,12 +49,12 @@ los registros han tenido la siguiente evolución:
     - Características notables:
         + **Registro saldo**
 
-5. *Versión pública **especial para consulta***
+5. Versión pública **especial para consulta**
     - Año de publicación: 2023 (diciembre)
     - ¿Descargable? No
     - ¿Existente actualmente? No
     - Descripción: Versión *consultable* del registro con 11 variables. Una de las cuales es el **estatus de busqueda**, resultado de la "Estrategia Nacional de Búsqueda Generalizada".
-    Hubo dos versiones, la primera que se publicó el 14 de diciembre y la segunda, en la que ya se se incorpora el **estatus de busqueda** y se publica una lista con los FUB de las personas supusetamente localizadas, el 27 de diciembre.
+    Hubo dos versiones, la primera que se publicó el 14 de diciembre y la segunda, en la que ya se se incorpora el **estatus de busqueda** y se publica una lista con los FUB de las personas supuestamente localizadas, el 27 de diciembre.
     - Características notables:
         + **Registro saldo**
 
@@ -72,14 +72,14 @@ los registros han tenido la siguiente evolución:
 
 ## Valores registrados por columna
 
-Antes de determinar el significado de cada fila en el dataset, vamos a ver con un poco más a detalle los valores que contiene cada columna, a excepción de la columna`fecha_desap` pues ya hemos explorado sus valores.
+Antes de determinar el significado de cada fila en el dataset, vamos a ver con un poco más a detalle los valores que contiene cada columna, a excepción de la columna `fecha_desap` pues ya hemos explorado sus valores.
 
 ### `nombrecompleto`
 ```{python}
 print(f'Valores contenidos en la columna \'nombrecompleto\' y el total de apariciones de cada valor \n {df['nombrecompleto'].value_counts()}')
 ```
 
-De aquí podemos ver que es posible que existan filas duplicadas.Aunque existe la posibilidad de que sean homónimos, podemos revisar el resto de columnas para ver si en efecto la información es la misma y se trata de duplicados.
+De aquí podemos ver que es posible que existan filas duplicadas. Aunque, también es posible que correspondan a registros de personas homónimas, podemos revisar el resto de columnas para ver si en efecto la información es la misma y se trata de duplicados.
 
 ### `rnpdno_json` y `rnpdno_csv`
 ```{python}
@@ -90,7 +90,7 @@ print(f'Valores contenidos en la columna \'rnpdno_json\' y el total de aparicion
 print(f'Valores contenidos en la columna \'rnpdno_csv\' y el total de apariciones de cada valor \n {df['rnpdno_csv'].value_counts()}')
 ```
 
-En el caso de estas dos variables se tienen únicamente los valores 0 o 1, por lo que podemos intuir que se trata de un indicador booleanao. Además, por el nombre de la columna sabemos que está relacionado con el *RNPDNO* y con json o csv, según la variable. Recordando el contexto de los registros oficiales podemos concluir que `rnpdno_json` indica si el registro estaba contenido en la versión del 5 de agosto publicada en formato json. Mientras que `rnpdno_csv` indica si el registro estaba contenido en la versión del 22 de agosto, publicada en formato csv.
+En el caso de estas dos variables se tienen únicamente los valores 0 o 1, por lo que podemos intuir que se trata de un indicador booleano. Además, por el nombre de la columna sabemos que está relacionado con el *RNPDNO* y con json o csv, según la variable. Recordando el contexto de los registros oficiales podemos concluir que `rnpdno_json` indica si el registro estaba contenido en la versión del 5 de agosto publicada en formato json. Mientras que `rnpdno_csv` indica si el registro estaba contenido en la versión del 22 de agosto, publicada en formato csv.
 
 ### `entidad_desap`
 ```{python}
@@ -126,7 +126,7 @@ La Estrategia Nacional de Búsqueda Generalizada clasificaba los registros de pe
 
 3. Ubicados por localizar: Personas de las cuales se cree que se conoce su paradero pero de las que no se tiene una prueba de muerte o defunción.
 
-4. Ubicados en base de datos: Personas con indicios correpondientes a fechas posteriores a su desaparición, pero que no han logrado ser contactadas.
+4. Ubicados en base de datos: Personas con indicios correspondientes a fechas posteriores a su desaparición, pero que no han logrado ser contactadas.
 
 5. Con denunciante: Personas que no aparecen en registros administrativos pero de las que se conocen los datos del denunciante.
 
