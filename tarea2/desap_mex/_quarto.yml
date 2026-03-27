@@ -17,7 +17,6 @@ book:
     - medidas_visual_interp.qmd
     - correlacion.qmd
     - limpieza.qmd
-    - reporte.qmd
     - references.qmd
 
 bibliography: references.bib
