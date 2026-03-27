@@ -5,18 +5,22 @@ A continuación se detallan las actividades concretas que se realizarían en cad
 ## Business Understanding
 Para esta fase de la metodología *CRISP-DM*, definimos los objetivos que queremos alcanzar con el análisis de los datos que se realizará, al igual que planteamos las preguntas de investigación que servirán como guía hacía el camino que se seguirá para el análisis de los datos. Por último, se definen los criterios de éxito para el proyecto, es decir, las condiciones que deben cumplirse para considerar que el proyecto ha sido exitoso. 
 
-Como *Objetivo Principal*, primero damos un breve contexto de la situación y es que el fenómeno que se busca analizar es un problema social el cual impacta de forma negativa a la sociedad mexicana y deja en cuestionamiento la seguridad pública, por lo que nuestro análisis del dataset busca a contribuir, aportar y ayudar a entender mejor este fenómeno para poder identificar patrones (ya sean demográficos o geográficos) que sean relevantes y utiles a la hora de la toma de decisiones por parte de las autoridades competentes.
+Como *Objetivo Principal*, primero damos un breve contexto de la situación y es que el fenómeno que se busca analizar es un problema social el cual impacta de forma negativa a la sociedad mexicana y deja en cuestionamiento la seguridad pública, por lo que nuestro análisis del dataset busca contribuir, aportar y ayudar a entender mejor este fenómeno para poder identificar patrones (ya sean demográficos o geográficos) que sean relevantes y utiles a la hora de la toma de decisiones por parte de las autoridades competentes.
 
-Luego, nosotros planteamos las siguientes *Preguntas de Análisis*:\
-1. ¿Cuáles son los estados con mayor número de casos de desaparición?\
-2. ¿Cuál es la distribución de edades de las personas desaparecidas?\
-3. ¿Existen patrones de desaparición relacionados con el género?\
-4. ¿Qué fechas presentan picos en el número de desapariciones?\
-Estos son algunas de las numerosas preguntas que se pueden plantear a partir del dataset, para nuestro análisis nos centraremos en estas cuatro.
+Por lo anterior comentado, nosotros planteamos las siguientes *Preguntas de Análisis* de acuerdo a las variables disponibles en el dataset:\
+1. ¿Cuáles son las entidades federativas con mayor número de casos de desaparición?\
+2. ¿Cómo se distribuyen los casos de desaparición a lo largo del tiempo?\
+3. ¿Qué estatus de búsqueda es el más frecuente dentro de los registros?\
+4. ¿Existe concentración de casos en ciertas entidades o periodos específicos?\
+5. ¿Qué tan integrados están los registros entre las distintas fuentes de información (RNPDNO JSON, CSV, RNPED)?\
+6. ¿Qué relación existe entre los procesos de búsqueda (bg_1 y bg_2) y las fuentes de datos?\
+7. ¿Los registros provenientes del sistema anterior (RNPED) presentan diferencias respecto a los del sistema actual?\
+8. ¿Existen patrones de concentración o dispersión en los datos que permitan identificar desigualdad en la distribución de los casos?\
 
 Los *Criterios de Éxito* que definimos para este análisis dado el dataset de personas desaparecidas en México, son los siguientes:\
 - Identificar al menos 8 hallazgos relevantes que sean respaldados con evidencia estadística y visual.\
 - Detectar patrones geográficos, temporales y demográficos.\
+- Realizar una evaluación de la concentración y variabilidad de los datos con el uso de medidas estadísticas.
 - Tratar la integridad ética de los datos, es decir, ser concientes de que no son simples números, sino que representan personas desaparecidas, por lo que se debe manejar la información con respeto y sensibilidad.
 
 ## Data Understanding
