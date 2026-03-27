@@ -1,9 +1,3 @@
----
-title: "Medidas"
-format: html
-jupyter: python3
----
-
 # Cálculo de medidas con visualizaciones e interpretación
 
 En esta sección se calculan las medidas de localización, dispersión, heterogeneidad y concentración, acompañadas de visualizaciones para derivar una interpretación a cada una de estas dado nuestro dataset de personas desaparecidas en México. Cada medida es importante puesto que nos permite comprender diferentes aspectos de la distribución de los datos, lo cual es fundamental para responder a las preguntas de análisis planteadas en la fase de Business Understanding. Para ello hacemos uso de bibliotecas de Python como Pandas, NumPy, Matplotlib y Seaborn para el cálculo de las medidas y la creación de visualizaciones que nos ayuden a interpretar los resultados obtenidos.
