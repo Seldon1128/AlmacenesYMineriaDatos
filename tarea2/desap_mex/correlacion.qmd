@@ -1,1 +1,96 @@
 # Correlación
+
+Recordando que la **Correlación** es una medida estadística la cual nos ayuda a identificar la relación existente entre dos o más variables, o bien, verificar si existe una dependencia entre si.\
+En nuestro caso, haremos uso de esta técnica para lograr identificar la relación entre las variables binarias que existen en nuestro dataset y ver de una manera visual dicha relación, por lo que se hará uso de una matriz de correlación y un heatmap para visualizarla.\
+
+Como nuestro dataset, sus variables son principalmente categóricas (nombrecompleto, entidad_desap y estatus_busqueda), haremos uso de las variables binarias con las que contamos (bg_1, bg_2, rnped, pre_rnped, rnpdno_json y rnpdno_csv) y de una variable numérica que se obtiene a partir de la fecha de desaparición (fecha_desap), la cual se convierte a formato numérico para poder incluirla en el análisis de correlación.
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+df = pd.read_csv("../data/tot_reg_desap.csv")
+
+# Variables binarias
+binarias = ['bg_1', 'bg_2', 'rnped', 'pre_rnped', 'rnpdno_json', 'rnpdno_csv']
+
+# Dataset para correlación
+df_corr = df[binarias]
+
+df_corr.head()
+```
+
+La tabla mostrada anteriormente corresponde a los datos binarios que serán usados como entrada para realizar el cálculo correspondiente de la matriz de correlación, donde cada fila representa un registro y cada columna indica la presencia o la ausencia de las características que se muestran en el encabezado de la tabla.
+
+---
+
+## Matriz de correlación
+
+```{python}
+corr = df_corr.corr()
+
+corr
+```
+
+
+---
+
+## Heatmap
+
+```{python}
+plt.figure()
+sns.heatmap(corr, annot=True, fmt=".2f")
+plt.title("Matriz de correlación")
+plt.show()
+```
+
+
+---
+
+
+## Identificar correlaciones fuertes y débiles
+
+```{python}
+# Convertir matriz a formato tabla
+corr_unstack = corr.unstack()
+
+# Quitar autocorrelación
+corr_unstack = corr_unstack[corr_unstack.index.get_level_values(0) != corr_unstack.index.get_level_values(1)]
+
+# Ordenar
+corr_sorted = corr_unstack.sort_values(ascending=False)
+
+# Más fuertes
+print("Correlaciones más fuertes:")
+print(corr_sorted.head(5))
+
+# Más débiles
+print("\nCorrelaciones más débiles:")
+print(corr_sorted.tail(5))
+```
+
+---
+
+## Interpretación de la correlación
+
+El análisis de correlación que realizamos nos permitio observar las relaciones que existen dados las variables binarias (y la fecha de desaparición) que usamos para construir la matriz de correlación. En la matriz podemos encontrar valores que van desde -1 hasta 1, pasando por el 0, lo que nos indica la *fuerza* que existe entre dos variables, de acuerdo a la Correlación de Pearson, podemos interpretar los valores de la siguiente manera:\
+- Si el valor es cercano a 1, entonces existe una relación fuerte positiva entre las variables, lo que indica que ambas variables tienden a aumentar o disminuir juntas.\
+- Si el valor es cercano a 0, entonces no existe una relación significativa entre las variables, lo que indica que no hay una asociación clara entre ellas.\
+- Si el valor es cercano a -1, entonces existe una relación fuerte negativa entre las variables, lo que indica que una variable tiende a aumentar mientras la otra disminuye.\
+
+
+Para nuestro caso, observamos que las correlaciones más fuertes se encuentran entre las variables **bg_1** y **bg_2**, con un valor de 0.97, lo que implica que si un registro de alguna persona desaparecida tiene un valor de 1 en bg_1, es muy probable que también se tenga el mismo valor en bg_2, es decir, ambos procesos están estrechamente relacionados dentro de la estrategia de búsqueda que fue realizada por el gobierno mexicano.\
+
+Seguido de esto, también encontramos una correlación entre las variables de **rnpdno_csv** con **bg_1** y **bg_2**, con valores de 0.77 y 0.74 respectivamente, lo que nos indica que los registros que se encuentran presentes en el RNPDNO (Registro Nacional de Personas Desaparecidas y No Localizadas) también tienen una alta probabilidad de también tener sus respectivos procesos de búsqueda en bg_1 y bg_2, lo que también es consistente con la estrategia de búsqueda que se ha implementado en México para las personas desaparecidas, donde el RNPDNO es una base de datos centralizada que se utiliza para registrar y rastrear a las personas desaparecidas, y los procesos de búsqueda (bg_1 y bg_2) son parte integral de esta estrategia para localizar a las personas desaparecidas. En pocas palabras, los datos proporcionados por el RNPDNO están muy integrados con los procesos de búsqueda actuales, aunque no deja de existir un porcentaje de registros que no se encuentran en el RNPDNO.\
+
+Luego, tenemos las variables de **rnpdno_json** y **rnped_csv** con una correlación de 0.73 lo que nos indica que ambas fuentes contienen información similar. Podemos inferir que a partir de estas dos variables son para representar la misma información, pero en diferentes formatos.\
+
+Por otro lado, también encontramos correlaciones debiles entre varibles como **rnped** con **rnpdno_csv** y **rnpdno_json**, con valores de -0.44 y -0.35 respectivamente, lo que nos indica que los registros que se encuentran presentes en el RNPED (Registro Nacional de Personas Extraviadas o Desaparecidas) tienen una baja probabilidad de también tener sus respectivos registros en el RNPDNO, lo que podría indicar que no todos los registros del RNPED están siendo integrados de manera efectiva en el RNPDNO, lo que pudiera ser un punto de mejora que se debe de considerar para mejorar la estrategia de búsqueda y localización de personas desaparecidas en México.\
+
+También tenemos que las variables de **rnped** con **bg_1** y **bg_2** cuentan con correlaciones de -0.24, lo que indica que los registros antiguos no son participantes en los procesos de búsqueda actuales, es decir, no son priorizados para ser localizados a comparación de registros nuevos.
+
+Por ultimo, observamos que la variable de **pre_rnped** con las demas variables van en un rango de correlación de -0.2 a 0.15, lo que pudiera ser un indicio de la poca relación que existe entre los registros que se encuentran en el pre_RNPED (Registro Preliminar de Personas Extraviadas o Desaparecidas) con los demás registros.
+
+Como podemos ver mediante este análisis de correlación, podemos observar y encontrar valores dependientes entre si que nos permiten entender mejor la relación que existe entre las variables binarias que se encuentran en nuestro dataset, lo que a su vez nos permite identificar posibles áreas de mejora en la estrategia de búsqueda y localización de personas desaparecidas en México, así como también entender mejor la integración de los datos entre las diferentes fuentes de información.
