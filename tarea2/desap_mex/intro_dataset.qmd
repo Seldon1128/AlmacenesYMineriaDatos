@@ -60,11 +60,6 @@ Ya que el número de registros con logitud 33,274 es el segundo más alto, se re
 fechas_anomalas = df[df['fecha_desap'].str.len() == 33274]['fecha_desap']
 val_anomalas = fechas_anomalas.unique()
 print(f"Valores del campo fecha_desap con longitud 33,274: {val_anomalas}")
-
-for fechas in val_anomalas:
-    ls = str(fechas).split(', ')
-
-len(ls)
 ```
 
 Para obtener la fecha máxima y mínima que hay en nuestro conjunto de datos, vamos a dividir las filas que tienen más de una fecha y las que tienen solo una, para después pasar de tipo `str` a tipo `date`.
