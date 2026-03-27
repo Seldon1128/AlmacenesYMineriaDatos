@@ -3,6 +3,12 @@
 Cada integrante del equipo eligió una empresa distinta en la que le gustaría trabajar e investigó qué metodología utiliza para desarrollar proyectos de Minería de Datos.
 
 ## Isaac
+La empresa que elegí para investigar acerca de su metodología fue **IBM**, una empresa que abarca muchos sectores de la tecnología, incluyendo la Minería de Datos puesto que principalmente una de sus herramientas basadas en esta área es **SPSS Modeler** la cual adopta parte de la metodología *CRISP-DM* para el desarrollo de sus proyectos.\
+
+**IBM** hace uso de la metodología **CRISP-DM** para guiar el proceso de desarrollo de proyectos de Minería de Datos, lo que les permite estructurar y organizar su trabajo de manera eficiente. Como dato curioso, **IBM** ha sido una de las empresas pioneras en la adopción de esta metodología, ya que fue una de las empresas que colaboró en el desarrollo de *CRISP-DM* en la década de 1990, lo que les ha permitido tener una profunda comprensión y experiencia en su aplicación.\
+La herrmienta de **IBM** para la Minería de Datos, **SPSS Modeler**, permite a los usuarios desarrollar modelos de minería de datos haciendo uso de un entorno virtual, en donde, cada fase de CRISP-DM se puede llevar a cabo mediante procesos específicos que la misma herramienta ofrece, proporcinando el análisis de datos, la construcción de modelos y la evaluación de resultados de manera integrada. Esto facilita a los usuarios seguir la metodología de manera estructurada y obtener resultados significativos a partir de sus datos.\
+
+Internamente en **IBM**, la metodología **CRISP-DM** se implementa en proyectos en donde se requiere de análisis de clientes, predicción de ventas/comportamiento y la toma de decisiones para la empresa a partir de los datos obtenidos. Aunque después de un tiempo, evoluciona a la metodología **ASUM-DM** (Analytics Solutions Unified Method for Data Mining) la cual es una versión actualizada de CRISP-DM, adaptada a las necesidades actuales de la industria y a los avances tecnológicos en el campo de la Minería de Datos.\
 
 ## Kevin
 
