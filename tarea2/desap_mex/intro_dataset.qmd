@@ -4,9 +4,6 @@ En esta sección vamos a comenzar a adentrarnos en el dataset, para conocer de m
 
 ```{python}
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 df = pd.read_csv("../data/tot_reg_desap.csv")
 df.head(3)
