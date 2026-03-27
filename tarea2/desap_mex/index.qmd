@@ -1,5 +1,18 @@
-# Preface {.unnumbered}
+# Introducción
 
-This is a Quarto book.
+El proyecto tiene como propósito realizar un análisis exploratorio del conjunto de datos *tot_reg_desap.csv*, el cual contiene información sobre registros de personas desaparecidas en México.
 
-To learn more about Quarto books visit <https://quarto.org/docs/books>.
+A través de este análisis se busca comprender la estructura del dataset, identificar patrones generales y explorar los valores contenidos en las ditintas variables.
+
+## Estructura del documento
+
+El contenido de este proyecto se organiza de la siguiente manera:
+
+* **Metodologías**: Ejemplos de metodologías utilizadas en empresas para proyectos de minería de datos
+* **Introducción al dataset**: Descripción general del conjunto de datos
+* **Diccionario de datos**: Explicación de las variables
+* **CRISP-DM**: Desarrollo del paso a paso a lo largo del proyecto, correspondientes a la metododlogía CRISP-DM
+* **Medidas, visualización e interpretación**: Análisis descriptivo de los datos
+* **Correlación**: Exploración de relaciones entre variables
+* **Limpieza**: Procesos básicos de limpieza de los datos
+* **Referencias**: Fuentes consultadas
