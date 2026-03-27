@@ -43,7 +43,3 @@ Elegí la empresa Mercedes-Benz, en esta empresa, los proyectos de minería de d
 Asimismo, en iniciativas más recientes como la minería urbana, Mercedes-Benz utiliza datos para identificar, recuperar y reutilizar materiales provenientes de vehículos fuera de uso, lo que refleja una aplicación clara de las fases de comprensión del negocio, modelado y despliegue dentro de CRISP-DM, ahora enfocadas en sostenibilidad y economía circular (Energy Magazine, 2025).
 
 En conjunto, estos casos muestran que la empresa no solo emplea técnicas de modelado y machine learning, sino que sigue un proceso completo de minería de datos que inicia con la definición del problema, continúa con el análisis y preparación de datos, y culmina con la implementación de soluciones en entornos reales. Esto confirma que CRISP-DM es una metodología adecuada para contextos industriales complejos, donde los datos deben traducirse en decisiones operativas y estratégicas con impacto tangible.
-
-:::{.callout-note}
-Entregable: un apartado breve por integrante, sustentado con citas de fuentes confiables.
-:::
