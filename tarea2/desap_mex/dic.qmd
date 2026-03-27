@@ -13,7 +13,7 @@ df = pd.read_csv("../data/tot_reg_desap.csv")
 
 Para comprender el significado de las columnas que conforman nuestro conjunto de datos 
 es necesario tomar en cuenta que la forma en la que se registran los datos de personas desaparecidas 
-en nuestro país a ha cambiado en varias ocasiones. Como se muestra enla páginas 20 a 25 de @datacivica2024, de forma general
+en nuestro país a ha cambiado en varias ocasiones. Como se muestra en las páginas 20 a 25 de @datacivica2024, de forma general
 los registros han tenido la siguiente evolución:
 
 1. Registro Nacional de Datos de Personas Extraviadas o Desaparecidas (**RNPED**)
@@ -46,21 +46,28 @@ los registros han tenido la siguiente evolución:
     - Descripción: **Registro** donde **cada renglón representa a un individuo**. Se publica en dos formatos:
         + 5 de agosto en formato json con 450 variables que en su mayoría eran vacías
         + 22 de agosto en un archivo csv con un subconjunto de 11 variables
+    - Características notables:
+        + **Registro saldo**
 
 5. *Versión pública **especial para consulta***
     - Año de publicación: 2023 (diciembre)
     - ¿Descargable? No
     - ¿Existente actualmente? No
     - Descripción: Versión *consultable* del registro con 11 variables. Una de las cuales es el **estatus de busqueda**, resultado de la "Estrategia Nacional de Búsqueda Generalizada".
-    Se publicó el 14 de diciembre pero fue hasta una actualización posterior, el 27 de diciembre, que se incorpora el **estatus de busqueda**.
+    Hubo dos versiones, la primera que se publicó el 14 de diciembre y la segunda, en la que ya se se incorpora el **estatus de busqueda** y se publica una lista con los FUB de las personas supusetamente localizadas, el 27 de diciembre.
+    - Características notables:
+        + **Registro saldo**
 
 6. **Nueva versión** del RNPDNO (02 **RNPDNO**) 
     - Año de inicio: 2024 (julio 9)
     - ¿Descargable? No
     - ¿Existente actualmente? Si
     - Descripción: Consta de dos modalidades: la *versión estadística* y la *versión consulta*. 
-
-    La primera es similar a la del 2020 con la diferencia de que ya no se pueden descargar las tablas que generan las gráficas, además ya no se incluye la clasificación de la "Estrategia Nacional de Búsqueda Generalizada". Por otro lado, la de consulta muestra fichas de personas desaparecidas 
+        + La primera es similar a la del 2020 con la diferencia de que ya no se pueden descargar las tablas que generan las gráficas. Además, no se incluye ninguna clasificación resultante de la Búsqueda Generalizada. 
+        + Por otro lado, la de consulta muestra fichas de personas desaparecidas con 10 variables sobre el caso con opción a descarga de boletínes en formato PDF para cada registro de la persona.
+    - Características notables:
+        + **Registro saldo**
+        + *Diesñado para permitir la **búsqueda por** Folio Único de Búsqueda (**FUB**) o nombre completo*.
 
 
 ## Valores registrados por columna
@@ -72,7 +79,7 @@ Antes de determinar el significado de cada fila en el dataset, vamos a ver con u
 print(f'Valores contenidos en la columna \'nombrecompleto\' y el total de apariciones de cada valor \n {df['nombrecompleto'].value_counts()}')
 ```
 
-De aquí podemos ver que es posible que existan filas duplicadas aunque siempre está la posibilidad de que en efecto sen personas distintas pero con el mismo nombre, también podemos revisar el resto de columnas para ver si en efecto la información es la misma y se trata de duplicados.
+De aquí podemos ver que es posible que existan filas duplicadas.Aunque existe la posibilidad de que sean homónimos, podemos revisar el resto de columnas para ver si en efecto la información es la misma y se trata de duplicados.
 
 ### `rnpdno_json` y `rnpdno_csv`
 ```{python}
@@ -83,14 +90,14 @@ print(f'Valores contenidos en la columna \'rnpdno_json\' y el total de aparicion
 print(f'Valores contenidos en la columna \'rnpdno_csv\' y el total de apariciones de cada valor \n {df['rnpdno_csv'].value_counts()}')
 ```
 
-En el caso de estas dos variables se tienen únicamente los valores 0 o 1, por lo que podemos intuir que se trata de un indicador booleanao. Además, por el nombre de la columna sabemos que está relacionado con el *RNPDNO* y con json o csv, según la variable. Por ello, recordando el contexto de los registros oficiales podemos colcuir que `rnpdno_json` indica si el registro estaba contenido en la versión del 5 de agosto publicada en formato json. Mientras que `rnpdno_csv` indica si el registro estaba contenido en la versión del 22 de agosto, publicada en formato csv.
+En el caso de estas dos variables se tienen únicamente los valores 0 o 1, por lo que podemos intuir que se trata de un indicador booleanao. Además, por el nombre de la columna sabemos que está relacionado con el *RNPDNO* y con json o csv, según la variable. Recordando el contexto de los registros oficiales podemos concluir que `rnpdno_json` indica si el registro estaba contenido en la versión del 5 de agosto publicada en formato json. Mientras que `rnpdno_csv` indica si el registro estaba contenido en la versión del 22 de agosto, publicada en formato csv.
 
 ### `entidad_desap`
 ```{python}
 print(f'Valores contenidos en la columna \'entidad_desap\' y el total de apariciones de cada valor \n {df['entidad_desap'].value_counts()}')
 ```
 
-En los valores de esta columna vemos no solo las 32 entidades federativas de México, sino además una opción '' para los casos en los que se desconoce el dato.
+En los valores de esta columna vemos no solo las 32 entidades federativas de México, sino además una opción `SE DESCONOCE` para los casos en los que no hay una entidad de desaparición o de reporte conocida.
 
 ### `pre_rnped` y `rnped`
 ```{python}
@@ -101,33 +108,105 @@ print(f'Valores contenidos en la columna \'pre_rnped\' y el total de apariciones
 print(f'Valores contenidos en la columna \'rnped\' y el total de apariciones de cada valor \n {df['rnped'].value_counts()}')
 ```
 
-De forma bastante similar a las columnas `rnpdno_json` y `rnpdno_csv`, en este caso también tenemos variables booleanas pero relacionadas al *RNPED* que es el primer registro del país. Por lo tanto, con base en los nombres de las variables tiene sentido decir que `pre_rnped` es una variable que marca si el registro se encuntra en versiones previas a la última versión del *RNPED* lanzada en 2018 y `rnped` marca si se encuentra en la última versión del *RNPED*.
+En este caso también tenemos variables booleanas pero relacionadas al *RNPED* que es el primer registro del país, con fecha de inicio en 2012. Por lo tanto, con base en los nombres de las variables tiene sentido decir que `pre_rnped` es una variable que marca si el registro se encuntra en versiones previas a la última versión del *RNPED* lanzada en 2018 y `rnped` marca si se encuentra en la última versión del *RNPED*.
+
+### `estatus_busqueda`
+```{python}
+print(f'Valores contenidos en la columna \'estatus_busqueda\' y el total de apariciones de cada valor \n {df['estatus_busqueda'].value_counts()}')
+```
+
+La Estrategia Nacional de Búsqueda Generalizada clasificaba los registros de personas desaparecidas en siete categorías [@gobcdmx2023metodologia]:
+
+1. Localizados: Para personas que han sido formalmente localizadas. Para que una localización se formalice deben de ocurrir tres cosas [@redaccion2026censo]:
+    * La integración de alguna prueba de vida o de defunción al expediente o carpeta de investigación
+    * El registro de la localización en las bases de datos
+    * El informe de localización al denunciante
+
+2. Localizados por formalizar: Para personas de las que se cuenta con prueba de vida o defunción pero que no se han cumplido los requisitos para la formalización.
+
+3. Ubicados por localizar: Personas de las cuales se cree que se conoce su paradero pero de las que no se tiene una prueba de muerte o defunción.
+
+4. Ubicados en base de datos: Personas con indicios correpondientes a fechas posteriores a su desaparición, pero que no han logrado ser contactadas.
+
+5. Con denunciante: Personas que no aparecen en registros administrativos pero de las que se conocen los datos del denunciante.
+
+6. Sin identidad confirmada: Personas que no aparecen en registros administrativos y/o su información de identidad esta incompleta y de las cuales no se conoce el denunciante.
+
+7. Denuncia confirmada: Personas desaparecidas cuyos casos están en investigación y búsqueda activa o cuya denuncia/reporte fue confirmado durante la búsqueda individualizada.
+
+Aunque en la [página oficial](https://busquedageneralizada.gob.mx/localizados) únicamente se muestran los resultados clasificados en seis categorías, estas son casi equivalentes, como se detalla a continuación:
+
+a. Localizadas: Une las clasificaciones de *localizados* y *localizados por formalizar* [@gobcdmx_bg].
+
+b. Ubicadas: Esta se divide en dos con base en el tipo de indicios que se tiene. Si se obtuvieron mediante llamada telefónica es la categoría *ubicados por localizar* y si se obtuvieron mediante cruce de bases de datos es la categoría *ubicados en base de datos* [@gobcdmx_bg].
+
+c. Registros sin datos suficientes para confirmar la identidad de la persona: Corresponde con la categoría *sin identidad confirmada* con la diferencia de que en la página se especifica como opción independiente la falta de datos del denunciante [@gobcdmx_bg].
+
+d. Registros identificados pero sin indicios para la búsqueda: Personas no localizadas cuya identidad ha sido confirmada, aparecen en registros administrativos y/o que si cuentan *con denunciante* pero cuyos datos no han sido suficientes para la localización o seguimiento del caso [@gobcdmx_bg].
+
+e. Denuncias confirmadas: Equivalente a la del mismo nombre en la clasificación anterior [@gobcdmx_bg].
+
+f. Duplicados: Registros de personas con el mismo nombre, año de nacimiento y fecha de desaparición. En caso de encontrarse en el Registro Nacional de Personas Desaparecidas y No Localizadas se unifican [@gobcdmx_bg].
+
+Así, esta columna del conjunto de datos refleja el resultado obtenido de la estrategia de búsqueda.
+
+| Valor en datos                                      | Inciso | Categoría                                                                 |
+|-----------------------------------------------------|--------|---------------------------------------------------------------------------|
+| Se busca reportante                                 | c      | Registros sin datos suficientes para confirmar la identidad de la persona |
+| Se requieren datos de identidad                     | c      | Registros sin datos suficientes para confirmar la identidad de la persona |
+| Con indicios / Ubicada                              | b      | Ubicadas |
+| Denuncia confirmada                                 | e      | Denuncias confirmadas  |
+| Se requieren datos de identidad, Se busca reportante| c    | Registros sin datos suficientes para confirmar la identidad de la persona |
+| Se requieren datos de identidad, Con indicios / Ubicada | c / b | Registros sin datos suficientes para confirmar la identidad de la persona / Ubicadas  |
+| Con indicios / Ubicada, Se requieren datos de identidad | b / c  | Ubicadas / Registros sin datos suficientes para confirmar la identidad de la persona    |
+| Se busca reportante, Se requieren datos de identidad | c    | Registros sin datos suficientes para confirmar la identidad de la persona |
+| Se requieren datos de identidad, Denuncia confirmada| c / e  | Registros sin datos suficientes para confirmar la identidad de la persona / Denuncias confirmadas |
+
+### `fub`
+```{python}
+print(f'Valores contenidos en la columna \'fub\' y el total de apariciones de cada valor \n  {df['fub'].value_counts()}')
+```
+
+Según lo establecido en @snbp2020_protocolo:
+
+> "Quienes reciban reportes o denuncias deben entregar a reportantes o denunciantes el Folio Único de Búsqueda (FUB) correspondiente a cada reporte de la desaparición o no localización de la persona [BInm3-BInm14-BInm25-BInm36-BInm44-BInm57]. Si se realizó telefónicamente, deben proporcionarlo oralmente, o enviar la constancia con el FUB por medios digitales. Si se realizó presencialmente, deben entregar impresa la constancia. Si se realizó por medios digitales, deben enviar la constancia por esos mismos medios."
+
+Así, dado que cada reporte de desaparición de una persona genera un FUB asociado al caso, una persona desaparecida puede tener más de un folio; sin embargo, en principio estos deberían estar relacionados. 
+Como se muestra en @cbpcdmx2020_manual el FUB, sigue el siguiente formato:
+
+`XXXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX`
+
+donde cada `X` representa un carácter alfanumérico.
+
+### `DC_id`
+```{python}
+print(f'Valores contenidos en la columna \'DC_id\' y el total de apariciones de cada valor \n  {df['DC_id'].value_counts()}')
+```
+
+Al observar los datos de esta columna podemos ver que constan de una lista de pares conformados por un identificador y entre paréntesis un formato (json, csv, fub).
 
 ### `bg_1` y `bg_2`
 
 ```{python}
-print(f'Valores contenidos en la columna \'bg_1\' y el total de apariciones de cada valor {df['bg_1'].value_counts()}')
+print(f'Valores contenidos en la columna \'bg_1\' y el total de apariciones de cada valor \n {df['bg_1'].value_counts()}')
 ```
 
 ```{python}
-print(f'Valores contenidos en la columna \'bg_2\' y el total de apariciones de cada valor {df['bg_2'].value_counts()}')
+print(f'Valores contenidos en la columna \'bg_2\' y el total de apariciones de cada valor \n  {df['bg_2'].value_counts()}')
 ```
 
+Estas variables nuevamente constan de valores booleanos (0 o 1) y por la abreviatura 'bg' puede estar relacionada con la 
+*Búsqueda Generalizada*. Dado que en la publicación de la *versión especial para consulta del RNPDNO* vimos que tuvimos una primera publicación el 14 de diceimbre del 2023 y una segunda publicación el 27 de diciembre del 2023, podemos concluir que estas variables corresponden a la presencia del registro en la primera y segunda publicación según el índice.
 
+Esto se puede ver de forma un poco más clara si nos fijamos en que aquellas filas que tienen valor 0 en `bg_2` (no formaron parte de la segunda publicación), en la columna `estatus_busqueda` tienen como valor NA pues recordemos que el `estatus_busqueda` se publicó hasta la versión del 27 de diciembre.
 
-### `estatus_busqueda`
 ```{python}
-print(f'Valores contenidos en la columna \'estatus_busqueda\' y el total de apariciones de cada valor {df['estatus_busqueda'].value_counts()}')
-```
+# Tomamos aquellos registros que no estuvieron en la segunda publicación y cuyp estatus no es NA
+filtro = (df['bg_2'] == 0) & (df['estatus_busqueda'].notna())
 
-### `fub`
-```{python}
-print(f'Valores contenidos en la columna \'fub\' y el total de apariciones de cada valor {df['fub'].value_counts()}')
-```
+print(f'Registros que no estuvieron en la segunda publicación \ny cuyo estatus de búsqueda se conoce.')
 
-### `DC_id`
-```{python}
-print(f'Valores contenidos en la columna \'DC_id\' y el total de apariciones de cada valor {df['DC_id'].value_counts()}')
+df[filtro]
 ```
 
 ## Diccionario
@@ -143,9 +222,9 @@ Con base en esta información se define el significado de cada columna en el con
 | pre_rnped            | Indica si la fila aparece en el *RNPED* antes de su última publicación | entero (1 o 0) | Numérica **discreta** |
 | rnped                | Indica si la fila aparece en el *RNPED* en su última publicación | entero (1 o 0) | Numérica **discreta** |
 | rnpdno_csv           | Indica si la fila aparece en la extracción de datos vía CSV del RNPDNO | entero (1 o 0)| Numérica **discreta**   |
-| bg_1                 |                                              | entero (1 o 0)| Numérica **discreta**   |
-| estatus_busqueda     |                                              | string       | Cualitativa **ordinal?** |
-| bg_2                 |                                              | entero (1 o 0)| Numérica **discreta**   |
-| fub                  | Es el folio único de búsqueda en el Registro Nacional de Personas Desaparecidas o No Localizadas. Una persona puede tener más de uno si el caso fue reportado por distintas personas o autoridades aunque deben estar asociados | string       | Cualitativa **nominal?** |
-| DC_id                |                                              | string       |                          |
-| fecha_desap          | Fecha de la desaparición                     | string       | Cualitativa **ordinal?** |
+| bg_1                 | Indica si la fila aparece en la publicación del 14 de diciembre del 2023 | entero (1 o 0)| Numérica **discreta**   |
+| estatus_busqueda     | Marca el resultado obtenido de la Estrategia Nacional de Búsqueda | string       | Cualitativa **ordinal** |
+| bg_2                 | Indica si la fila aparece en la publicación del 27 de diciembre del 2023 | entero (1 o 0)| Numérica **discreta**   |
+| fub                  | Es el folio único de búsqueda en el Registro Nacional de Personas Desaparecidas o No Localizadas. Una persona puede tener más de uno. | string       | Cualitativa **nominal** |
+| DC_id                | Permite conocer el identificador de la fila correspondiente a la fuente en la que se encuentra | string       | Cualitativa **nominal** |
+| fecha_desap          | Fecha de la desaparición | string       | Cualitativa **ordinal** |
