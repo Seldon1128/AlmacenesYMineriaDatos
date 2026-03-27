@@ -12,6 +12,17 @@ Internamente en **IBM**, la metodología **CRISP-DM** se implementa en proyectos
 
 ## Kevin
 
+Yo elegí la empresa de **Amazon**, la cual es una de las empresas más grandes del mundo. Amazon o más específicamente Amazon Web Services "AWS" su división de servicios en la nube realiza sus proyectos de minería de datos utilizando la metodología **CRISP-DM**.
+
+La metodología **CRISP-DM** le permite a Amazon crear un análisis de volumenes masivos de datos para así poder tomar decisiones basadas en sus datos las cuales les permiten mejorar sus estrategias para la personalización y la eficiencia logística.
+
+Su proceso es iterativo pero se centra mucho en la comprensión del negocio, con herramientas como Amazon SageMaker pueden reducir el tiempo necesario para la preparación de los datos, además de que permite crear e implementar modelos de Machine Learning de alta calidad junto con varias herramientas que ayudan en el proceso de la minería de datos.
+
+Pero esa no es la única herramiento con la que cuenta Amazon ya que por ejemplo para la preparación de datos también cuenta con Amazon Glue o Amazon QuickSight, con todas estas herramientas Amazon obtiene un proceso no lineal sino más bien un ciclo del cual obtiene retroalimentación de los resultados del despliegue para así mejorar.
+
+Amazon utiliza esta metodología en la minería de datos para mejorar la eficiencia de su servicio y la experiencia del cliente, transformando los datos en decisiones estratégicas que impactan en todo el negocio.
+
+
 ## Arlet
 
 Gracias a la diversidad de fuentes de datos, mediciones y experimentos con los que cuenta Netflix, ha sido posible establecer una cultura a nivel global que le permite manejarse como una organización basada en datos, cuyo principal objetivo es inovar en pro de sus consumidores [@netflix].
