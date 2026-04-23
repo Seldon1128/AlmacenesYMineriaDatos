@@ -1,0 +1,21 @@
+# Modelo de clasificación
+
+<!-- añadir descripción de la sección? -->
+
+## División del conjunto de datos
+
+<!-- cómo se dividió y pq -->
+
+## Construcción del modelo
+
+<!-- proceso de construcción del modelo -->
+
+## Métricas de desempeño
+
+<!-- Elegir, justificar e interpretar al menos dos métricas -->
+
+## Análisis del modelo
+
+<!-- ¿Qué variables son más relevantes para el modelo? -->
+
+<!-- ¿Captura patrones reales o sesgos en los datos? -->

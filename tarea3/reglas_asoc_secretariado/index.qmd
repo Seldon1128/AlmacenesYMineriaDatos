@@ -1,0 +1,12 @@
+# Introducción {.unnumbered}
+
+A lo largo de este proyecto se trabajará con el conjunto de datos *data_secretariado.csv* en una versión derivada del trabajo de limpieza realizado por otro equipo.
+
+En primer lugar, se busca generar reglas de asociación interpretables, tomando en cuenta que estas **si bien pueden reflejar un fenómeno real también pueden ser consecuencia del mismo sistema de regstro**. Durante el proceso de generación de reglas de asociación se aplicarán tres algoritmos distintos, con el fin de realizar una comparativa del desempeño de cada uno de ellos.
+
+En segundo lugar, se busca desarrollar un modelo de clasificación, que sea capaz de predecir el valor de la variable `ESTATUS_VICTIMA` a partir de otras variables del dataset.
+
+## Estructura del documento
+
+
+

@@ -1,0 +1,30 @@
+project:
+  type: book
+
+book:
+  title: "reglas_asoc_secretariado"
+  author: "Arlet Pinacho Báez, 
+   Isaac Giovani Escobar Gónzalez,
+   Kevin Jonathan Garduño Escobar,
+   Seldon Sautto Ramírez"
+  date: "4/22/2026"
+  chapters:
+    - index.qmd
+    - tratamiento.qmd
+    - apriori.qmd
+    - reglas.qmd
+    - clasificacion.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+  pdf:
+    documentclass: scrreprt
+
+
+

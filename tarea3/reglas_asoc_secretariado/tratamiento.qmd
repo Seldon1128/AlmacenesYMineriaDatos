@@ -1,0 +1,25 @@
+# Preprocesamiento del conjunto de datos
+
+<!-- añadir descripción de la sección? -->
+
+## Exploración de los datos
+
+<!-- intro a la estructura del dataset? -->
+
+```{python}
+import pandas as pd
+
+df = pd.read_csv("../data/data_secretariado.csv")
+df.head(3)
+```
+
+## Discretización
+
+<!-- Para aplicar reglas de asociación, deberás discretizar variables continuas (por ejemplo edad o fechas) y justificar tu elección. -->
+
+## Tratamiento de valores faltantes o confidenciales
+
+<!-- Considera explícitamente las limitaciones del dataset, en particular la presencia de valores como CONFIDENCIAL o SIN DATO.
+
+Justifica cómo decides tratar estos valores (eliminarlos, agruparlos o mantenerlos como
+categoría) -->
