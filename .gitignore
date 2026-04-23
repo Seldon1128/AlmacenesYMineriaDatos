@@ -7,3 +7,6 @@
 _book/
 .quarto/
 *.quarto_ipynb
+
+# Datasets
+*/data
