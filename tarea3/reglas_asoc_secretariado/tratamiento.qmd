@@ -2,15 +2,55 @@
 
 <!-- añadir descripción de la sección? -->
 
-## Exploración de los datos
+En esta sección además de ver las características principales del conjunto de 
+datos con el que se va a trabajar, se aplicarán transformaciones a los datos 
+para discretizar las variables continuas presentes en el dataset, esto con el fin 
+de mejorar el desempeño de los algoritmos de minería de datos que se aplicarán 
+en las siguientes secciones.
+
+## Introducción al conjunto de datos
 
 <!-- intro a la estructura del dataset? -->
+El conjunto de datos consta de **133,887 filas**, cada una representando un reporte de desaparición descrito por **11 variables** (columnas). Gran parte de estas columnas corresponden a datos representados mediante **cadenas de texto**, aunque también se tienen dos columnas con **datos numéricos**: `CVE_ENT` y `CVE_MUN`.
 
 ```{python}
 import pandas as pd
 
 df = pd.read_csv("../data/data_secretariado.csv")
-df.head(3)
+
+print(df.info())
+```
+
+Para clasificar de mejor forma las variables con las que se cuenta exploramos los posibles valores de cada columna.
+
+```{python}
+for col in df.columns:
+    print(col, df[col].unique())
+    print()
+```
+
+Así, la siguiente tabla resume el tipo de información que brinda cada columna del dataset.
+
+| Columna               | Significado                                                                 | Tipo de variable        |
+|---------------------- |-----------------------------------------------------------------------------|-------------------------|
+| ID_VICTIMA            | Folo Único de Búsqueda (tentativamente)                                     | Cualitativa nominal     |
+| ORIGEN_REPORTE        | Institución que generó el reporte (puede ser *SE DESCONOCE*)                | Cualitativa nominal     |
+| FECHA_NACIMIENTO      | Fecha de nacimiento de la víctima                                           | Numérica continua       |
+| SEXO                  | Sexo de la víctima (puede ser *CONFIDENCIAL*  o *INDETERMINADO*)            | Cualitativa nominal     |
+| FECHA_DESAPARICION    | Fecha y hora en que ocurrió la desaparición (puede ser *CONFIDENCIAL*)      | Numérica continua       |
+| FECHA_REGISTRO        | Fecha y hora en que se registró el caso (puede ser *CONFIDENCIAL*)          | Numérica continua       |
+| ESTATUS_VICTIMA       | Estado actual de la víctima (puede ser *CONFIDENCIAL*)                      | Cualitativa nominal     |
+| CVE_ENT               | Clave de la entidad federativa                                              | Cualitativa nominal     |
+| ENTIDAD               | Nombre de la entidad federativa (puede ser *SE DESCONOCE*)                  | Cualitativa nominal     |
+| CVE_MUN               | Clave del municipio                                                         | Cualitativa nominal     |
+| MUNICIPIO             | Nombre del municipio (puede ser *CONFIDENCIAL*)                             | Cualitativa nominal     |
+
+---
+
+Por último, para facilitar el entendimiento de los registros del conjunto de datos, veremos algunas de las filas contenidas.
+
+```{python}
+df.head(5)
 ```
 
 ## Discretización
