@@ -56,6 +56,50 @@ df.head(5)
 ## Discretización
 
 <!-- Para aplicar reglas de asociación, deberás discretizar variables continuas (por ejemplo edad o fechas) y justificar tu elección. -->
+Como ya vimos en el punto anterior el dataset cuenta con tres columnas con datos númericos continuos las que seran las variables que necesitan discretización. Estas columnas son `FECHA_NACIMIENTO`, `FECHA_DESAPARICION` y `FECHA_REGISTRO`.  
+Para empezar a discretizar estas variables, se decidió lo siguiente:
+`FECHA_NACIMIENTO` se discretizará en rangos de edad, es decir, calcularemos la edad que tenía la víctima al momento de su desaparición y luego se agruparán en rangos como: 0-11 años, 12-17 años, 18-29 años, 30-44 años, 45-59 años y 60 años o más.  
+Al elegir estos rangos nos basamos en que cada uno representa una etapa de la vida como: infancia, adolescencia, juventud, adultez temprana, adultez media y vejez, lo que puede ser relevante en el análisis de desapariciones, además de que son rangos muy parecidos a los que se usan en los informes de Personas Desaparecidas de Datacívica.
+En cuanto a las columnas `FECHA_DESAPARICION` y `FECHA_REGISTRO`, se decidió discretizarlas de acuerdo a los meses del año en que ocurrieron, es decir, se agruparán en categorías como: enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre y diciembre, además de por año en el que ocurrio. 
+Esta elección se hizo así para poder analizar de manera más fácil si existen algún patrón en las desapariciones o en los registros de acuerdo a la época del año o al año mismo en el que ocurrieron.  
+Por lo tanto, se crearán nuevas columnas para cada una de estas variables discretizadas, quedando de la siguiente manera: `RANGO_EDAD`, `MES_DESAPARICION`, `AÑO_DESAPARICION`, `MES_REGISTRO` y `AÑO_REGISTRO`, además de las variables que no necesitan discretización puesto que ya son categóricas.  
+Por otro lado, decidimos eliminar las columnas: `ID_VICTIMA`, `FECHA_NACIMIENTO`, `FECHA_DESAPARICION`, `FECHA_REGISTRO`, `CVE_ENT` y `CVE_MUN` ya que conservar estas columnas no aportaría información relevante, además de que las columnas `CVE_ENT` y `CVE_MUN` son claves numéricas de las entidades y los municipios lo cual no es necesario para el análisis.  
+
+```{python}
+# Calcular edad al momento de la desaparición
+df['FECHA_NACIMIENTO'] = pd.to_datetime(df['FECHA_NACIMIENTO'], format='%Y-%m-%d', errors='coerce')
+df['FECHA_DESAPARICION'] = pd.to_datetime(df['FECHA_DESAPARICION'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+df['FECHA_REGISTRO'] = pd.to_datetime(df['FECHA_REGISTRO'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+
+df['EDAD'] = (df['FECHA_DESAPARICION'] - df['FECHA_NACIMIENTO']).dt.days // 365
+
+# Agrupar rangos de edad 
+bins = [0, 12, 18, 30, 45, 60, 120]
+labels = ['0-11', '12-17', '18-29', '30-44', '45-59', '60+']
+df['GRUPO_EDAD'] = pd.cut(df['EDAD'], bins=bins, labels=labels, right=False).astype('object')
+
+# Mes y año de desaparición
+df['MES_DESAPARICION'] = df['FECHA_DESAPARICION'].dt.month
+df['AÑO_DESAPARICION'] = df['FECHA_DESAPARICION'].dt.year
+
+# Mes y año de registro
+df['MES_REGISTRO'] = df['FECHA_REGISTRO'].dt.month
+df['AÑO_REGISTRO'] = df['FECHA_REGISTRO'].dt.year
+
+# Mes numérico a nombre 
+meses = {1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',
+         7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'}
+
+df['MES_DESAPARICION'] = df['MES_DESAPARICION'].map(meses)
+df['MES_REGISTRO'] = df['MES_REGISTRO'].map(meses)
+
+# En caso de que no se haya podido calcular la edad, se asigna el valor 'DESCONOCIDO' al grupo de edad
+df['GRUPO_EDAD'] = df['GRUPO_EDAD'].astype('object')
+df['GRUPO_EDAD'] = df['GRUPO_EDAD'].fillna('DESCONOCIDO')
+
+print("\nDistribución de GRUPO_EDAD:")
+print(df['GRUPO_EDAD'].value_counts())
+```
 
 ## Tratamiento de valores faltantes o confidenciales
 
@@ -63,3 +107,47 @@ df.head(5)
 
 Justifica cómo decides tratar estos valores (eliminarlos, agruparlos o mantenerlos como
 categoría) -->
+
+Decidimos no eliminar los registros con valores faltantes o confidenciales, ya que aunque no tengamos la información completa en estos registros eso no significa que no tengamos nada de información en estos registros, además de que eliminar estos registros podría reducir significativamente el tamaño del conjunto de datos, perder información valiosa y alterar el análisis de los datos.  
+En lugar de eliminar estos registros decidimos crear una nueva categoría `DESCONOCIDO` para unificar los valores faltantes o confidenciales, esto para que el análisis de los datos sea más fácil y para que no se pierda información valiosa.  
+Entonces, se reemplazaron los valores `CONFIDENCIAL`, `SIN DATO`, `INDETERMINADO` y `SE DESCONOCE` por la categoría `DESCONOCIDO` en todas las columnas del dataset.
+
+```{python}
+valores_confidenciales = ['CONFIDENCIAL', 'SIN DATO', 'INDETERMINADO', 'SE DESCONOCE']
+for col in df.select_dtypes(include=['object', 'str']).columns:
+    n = df[col].isin(valores_confidenciales).sum()
+    if n > 0:
+        print(f"Columna '{col}': {n} registros ({100*n/len(df):.1f}%) reemplazados por 'DESCONOCIDO'")
+    df.loc[df[col].isin(valores_confidenciales), col] = 'DESCONOCIDO'
+
+for col in ['GRUPO_EDAD', 'MES_DESAPARICION', 'AÑO_DESAPARICION', 'MES_REGISTRO', 'AÑO_REGISTRO']:
+    df[col] = df[col].fillna('DESCONOCIDO')
+```
+
+Ahora, se eliminaron las columnas que ya no se necesitan para el análisis, de modo que se guarda un nuevo dataset con las siguientes columnas: `ID_VICTIMA`, `ORIGEN_REPORTE`, `SEXO`, `ESTATUS_VICTIMA`, `ENTIDAD`, `MUNICIPIO`, `GRUPO_EDAD`, `MES_DESAPARICION`, `AÑO_DESAPARICION`, `MES_REGISTRO` y `AÑO_REGISTRO`.  
+
+```{python}
+columnas_analisis = ['ORIGEN_REPORTE', 'SEXO', 'ESTATUS_VICTIMA', 'ENTIDAD', 'MUNICIPIO',
+                   'GRUPO_EDAD', 'MES_DESAPARICION', 'AÑO_DESAPARICION', 'MES_REGISTRO', 'AÑO_REGISTRO']
+df_analisis = df[columnas_analisis].copy()
+df_analisis.head(5)
+```
+
+Finalmente, se guarda un nuevo dataset listo para Apriori y clasificación, los cuales son: `data_secretariado_analisis.csv` y `data_secretariado_clasificacion.csv`
+
+Como nota, hay que mencionar que las columnas `AÑO_DESAPARICION` y `AÑO_REGISTRO` las convertimos a tipo `str` para facilitar el análisis de los datos y para que no se pierda información valiosa.
+```{python}
+df_analisis['AÑO_DESAPARICION'] = df_analisis['AÑO_DESAPARICION'].astype(str)
+df_analisis['AÑO_REGISTRO'] = df_analisis['AÑO_REGISTRO'].astype(str)
+
+df_apriori = df_analisis.copy()
+df_apriori = pd.get_dummies(df_apriori, dtype=bool)
+df_apriori.to_csv("../data/data_secretariado_apriori.csv", index=False)
+print("Dataset preprocesado guardado como 'data_secretariado_apriori.csv'")
+print(f"Dataset guardado: {df_apriori.shape[0]} filas, {df_apriori.shape[1]} columnas")
+
+
+df_analisis.to_csv("../data/data_secretariado_clasificacion.csv", index=False)
+print("Dataset preprocesado guardado como 'data_secretariado_clasificacion.csv'")
+print(f"Dataset guardado: {df_analisis.shape[0]} filas, {df_analisis.shape[1]} columnas")
+```
