@@ -1,0 +1,408 @@
+# Implementación manual del algoritmo Apriori
+
+El algoritmo **Apriori** es un método de minería de datos utilizado para descubrir patrones frecuentes dentro de una base de datos transaccional. Su objetivo principal es encontrar combinaciones de ítems que aparecen juntas muchas veces dentro del conjunto de datos.
+
+Apriori funciona de manera **iterativa y por niveles**. Primero encuentra los ítems frecuentes individuales (de tamaño 1), después forma combinaciones de tamaño 2, luego de tamaño 3, y así sucesivamente. En cada nivel solo se conservan aquellas combinaciones que cumplen con un **soporte mínimo** previamente definido.
+
+La idea central del algoritmo se basa en la **propiedad Apriori**, que dice:
+
+> Si un conjunto de ítems es frecuente, entonces todos sus subconjuntos no vacíos también deben ser frecuentes.
+
+
+Gracias a esta propiedad, el algoritmo evita evaluar muchas combinaciones innecesarias. Si un conjunto pequeño no es frecuente, el algoritmo descarta automáticamente cualquier combinación más grande que lo contenga. Esto hace que Apriori sea más eficiente que un enfoque completamente exhaustivo.
+
+Es importante mencionar que Apriori, por sí mismo, se encarga de generar los **itemsets frecuentes**. Posteriormente, a partir de estos conjuntos frecuentes, se construyen las **reglas de asociación fuertes**, utilizando un umbral mínimo de confianza.
+
+En esta sección se desarrolla una implementación manual del algoritmo en Python, siguiendo el pseudocódigo visto en clase y replicando paso a paso la lógica del procedimiento.
+
+---
+
+## Algoritmo Apriori
+
+El algoritmo Apriori se compone de dos procedimientos principales:
+
+1. Generación de **itemsets frecuentes**.
+2. Generación de **reglas de asociación fuertes** a partir de esos itemsets.
+
+A continuación se describe el primer procedimiento siguiendo el pseudocódigo visto en clase e incorporando una explicación intuitiva.
+
+---
+
+### Algoritmo 1: Generación de itemsets frecuentes
+
+**Entrada:**
+- Una base de datos transaccional \( D \).
+- Un valor mínimo de soporte.
+
+**Salida:**
+- El conjunto de todos los itemsets frecuentes en \( D \).
+
+El procedimiento funciona de la siguiente manera:
+
+1. Se inicia con \( k = 1 \).
+2. Se generan los candidatos de tamaño \( k \) (conjuntos de un solo ítem).
+3. Se calcula el soporte de cada candidato recorriendo la base de datos.
+4. Se construye \( F_k \), que contiene únicamente los candidatos que cumplen el soporte mínimo.
+5. Mientras \( F_k \neq \varnothing \):
+   - Se incrementa el tamaño: \( k = k + 1 \).
+   - Se generan nuevos candidatos \( C_k \) combinando los conjuntos frecuentes del nivel anterior.
+   - Se calcula el soporte de cada candidato recorriendo nuevamente la base de datos.
+   - Se eliminan los candidatos que no cumplen el soporte mínimo.
+6. El algoritmo termina cuando ya no se generan nuevos conjuntos frecuentes.
+7. Se devuelve la unión de todos los conjuntos frecuentes encontrados.
+
+---
+
+### Explicación intuitiva
+
+Apriori trabaja **nivel por nivel**.
+
+Primero busca qué elementos individuales aparecen muchas veces (nivel 1).  
+Después combina esos elementos frecuentes para formar pares (nivel 2).  
+Luego combina los pares frecuentes para formar tríos (nivel 3), y así sucesivamente.
+
+En cada nivel:
+
+- Se generan candidatos.
+- Para cada candidato se recorre la base de datos completa.
+- Se cuenta cuántas transacciones contienen ese conjunto.
+- Se calcula su soporte.
+- Solo sobreviven los que cumplen el soporte mínimo.
+
+---
+
+### Propiedad Apriori (idea clave)
+
+El algoritmo se basa en la siguiente propiedad:
+
+> Si un conjunto de ítems es frecuente, entonces todos sus subconjuntos no vacíos también deben ser frecuentes.
+
+Esto significa que si un subconjunto no cumple el soporte mínimo, el algoritmo **ni siquiera genera** combinaciones más grandes que lo contengan.
+
+Por ejemplo, si el conjunto \( \{A, C\} \) no es frecuente, entonces \( \{A, B, C\} \) no puede ser frecuente.  
+Por lo tanto, esa combinación no se construye en el siguiente nivel.
+
+Gracias a esta propiedad, el algoritmo evita evaluar muchas combinaciones innecesarias y reduce significativamente la cantidad de cálculos.
+
+---
+
+### Algoritmo 2: Generación de reglas de asociación fuertes
+
+Una vez que se han identificado los itemsets frecuentes mediante el Algoritmo 1, el siguiente paso consiste en generar reglas de asociación a partir de dichos conjuntos.
+
+Mientras que el primer algoritmo responde a la pregunta:
+
+> ¿Qué combinaciones de elementos aparecen con frecuencia?
+
+El segundo responde:
+
+> Si ocurre un conjunto de elementos, ¿qué tan probable es que también ocurra otro?
+
+---
+
+**Entrada:**
+- El conjunto de itemsets frecuentes.
+- Un valor mínimo de confianza \( c_{min} \).
+
+**Salida:**
+- El conjunto \( R \) de reglas de asociación fuertes.
+
+---
+
+### Procedimiento
+
+1. Se inicializa el conjunto de reglas como vacío:  
+   \[
+   R = \varnothing
+   \]
+
+2. Para cada itemset frecuente \( I \) de tamaño \( k \geq 2 \):
+
+   - Se generan todos los subconjuntos no vacíos \( s \subset I \).
+   - Para cada subconjunto \( s \), se construye la regla:
+     
+     \[
+     s \Rightarrow (I - s)
+     \]
+
+3. Para cada regla generada, se calcula su confianza:
+
+   \[
+   confidence(s \Rightarrow I-s) =
+   \frac{support(I)}{support(s)}
+   \]
+
+4. Si la confianza es mayor o igual que \( c_{min} \), la regla se conserva.
+
+5. Si no cumple el umbral mínimo, la regla se descarta.
+
+6. El proceso se repite para todos los itemsets frecuentes.
+
+7. Finalmente, se devuelve el conjunto de reglas fuertes \( R \).
+
+---
+
+### Explicación intuitiva
+
+Si un conjunto frecuente es:
+
+\[
+I = \{A, B, C\}
+\]
+
+El algoritmo intenta convertirlo en reglas posibles:
+
+- \( A \Rightarrow BC \)
+- \( B \Rightarrow AC \)
+- \( C \Rightarrow AB \)
+- \( AB \Rightarrow C \)
+- \( AC \Rightarrow B \)
+- \( BC \Rightarrow A \)
+
+Cada una de estas reglas se evalúa mediante la confianza.
+
+La confianza mide la probabilidad condicional:
+
+> ¿Qué tan probable es que ocurra el consecuente si ya ocurrió el antecedente?
+
+Si una regla tiene alta confianza, significa que cuando aparece el antecedente, el consecuente aparece con gran frecuencia.
+
+---
+
+### Relación entre ambos algoritmos
+
+El Algoritmo 1 identifica patrones frecuentes utilizando soporte.  
+El Algoritmo 2 toma esos patrones y construye implicaciones utilizando confianza.
+
+Es importante notar que:
+
+- No se generan reglas a partir de conjuntos que no sean frecuentes.
+- El soporte garantiza relevancia estadística.
+- La confianza garantiza fuerza predictiva.
+
+Ambos procedimientos trabajan de manera complementaria para descubrir patrones estructurales dentro del conjunto de datos.
+
+Primero se detectan combinaciones relevantes; posteriormente, se identifican relaciones con alta probabilidad condicional.
+
+---
+
+## Implementación en Python
+
+En esta sección se implementa manualmente la primera parte del algoritmo Apriori, es decir, la generación de itemsets frecuentes, siguiendo el pseudocódigo del Algoritmo 4.1.
+
+El objetivo es:
+
+- Generar candidatos por niveles.
+- Calcular su soporte recorriendo la base de datos.
+- Conservar únicamente aquellos que cumplan el soporte mínimo.
+
+```{python}
+import pandas as pd
+from itertools import combinations
+
+# =========================
+# Cargar datos
+# =========================
+
+df = pd.read_csv("data/data_secretariado_apriori.csv")
+
+# Convertimos cada fila en un conjunto de ítems verdaderos
+transactions = []
+
+for _, row in df.iterrows():
+    items = set(df.columns[row == 1])
+    transactions.append(items)
+
+n_transactions = len(transactions)
+
+print("Total transacciones:", n_transactions)
+
+# =========================
+# Parámetro
+# =========================
+
+min_support = 0.1
+min_count = min_support * n_transactions
+
+print("Soporte mínimo en cantidad:", min_count)
+
+# =========================
+# Función para calcular soporte
+# =========================
+
+def calculate_support(itemset):
+    count = 0
+    for transaction in transactions:
+        if itemset.issubset(transaction):
+            count += 1
+    return count
+
+# =========================
+# Algoritmo Apriori Manual
+# =========================
+
+k = 1
+frequent_itemsets = []
+current_frequent = []
+
+# -------- Nivel 1 --------
+print("\nGenerando F1...")
+
+item_counts = {}
+
+for transaction in transactions:
+    for item in transaction:
+        item_counts[item] = item_counts.get(item, 0) + 1
+
+F1 = []
+
+for item, count in item_counts.items():
+    if count >= min_count:
+        F1.append(frozenset([item]))
+
+current_frequent = F1
+frequent_itemsets.extend(F1)
+
+print("Itemsets frecuentes tamaño 1:", len(F1))
+
+# -------- Niveles k >= 2 --------
+
+while current_frequent:
+    
+    k += 1
+    print(f"\nGenerando candidatos tamaño {k}...")
+    
+    candidates = set()
+    
+    # Generar Ck combinando Fk-1
+    for i in range(len(current_frequent)):
+        for j in range(i + 1, len(current_frequent)):
+            union = current_frequent[i].union(current_frequent[j])
+            if len(union) == k:
+                candidates.add(union)
+    
+    print("Candidatos generados:", len(candidates))
+    
+    # Calcular soporte
+    new_frequent = []
+    
+    for candidate in candidates:
+        count = calculate_support(candidate)
+        if count >= min_count:
+            new_frequent.append(candidate)
+    
+    print("Frecuentes encontrados:", len(new_frequent))
+    
+    current_frequent = new_frequent
+    frequent_itemsets.extend(new_frequent)
+
+print("\nTotal itemsets frecuentes encontrados:", len(frequent_itemsets))
+
+```
+
+---
+
+## Generación Manual de Reglas de Asociación Fuertes
+
+En esta sección se implementa manualmente el Algoritmo 2, el cual toma los itemsets frecuentes generados anteriormente y construye reglas de asociación que cumplan con un umbral mínimo de confianza.
+
+```{python}
+# =========================
+# Parámetro de confianza
+# =========================
+
+min_confidence = 0.7
+
+print("\nConfianza mínima:", min_confidence)
+
+# =========================
+# Crear diccionario de soportes
+# =========================
+
+# Para poder calcular confidence necesitamos conocer support(I) y support(s)
+
+support_dict = {}
+
+for itemset in frequent_itemsets:
+    support_dict[itemset] = calculate_support(itemset) / n_transactions
+
+# =========================
+# Generación de reglas
+# =========================
+
+rules = []
+
+for itemset in frequent_itemsets:
+    
+    # Solo conjuntos tamaño >= 2 pueden generar reglas
+    if len(itemset) >= 2:
+        
+        # Generar todos los subconjuntos no vacíos propios
+        for i in range(1, len(itemset)):
+            for antecedent in combinations(itemset, i):
+                
+                antecedent = frozenset(antecedent)
+                consequent = itemset - antecedent
+                
+                support_I = support_dict[itemset]
+                support_A = support_dict[antecedent]
+                
+                confidence = support_I / support_A
+                
+                if confidence >= min_confidence:
+                    rules.append({
+                        "antecedent": antecedent,
+                        "consequent": consequent,
+                        "support": support_I,
+                        "confidence": confidence
+                    })
+
+print("\nTotal reglas fuertes encontradas:", len(rules))
+
+# Convertir a DataFrame para visualizar
+rules_df = pd.DataFrame(rules)
+
+# Convertir conjuntos a texto para mostrar bonito
+rules_df["antecedent"] = rules_df["antecedent"].apply(lambda x: ", ".join(x))
+rules_df["consequent"] = rules_df["consequent"].apply(lambda x: ", ".join(x))
+
+rules_df.sort_values(by="confidence", ascending=False).reset_index(drop=True)
+
+```
+
+
+
+--
+
+## Resultados obtenidos
+
+A partir de la implementación manual del algoritmo Apriori se trabajó con un total de **133,887 transacciones** y un soporte mínimo equivalente al **10%** (13,388 registros aproximadamente).
+
+Durante la generación de itemsets frecuentes, el algoritmo avanzó nivel por nivel hasta que ya no fue posible generar nuevos candidatos. El proceso produjo:
+
+- 16 itemsets frecuentes de tamaño 1.
+- 36 itemsets frecuentes de tamaño 2.
+- 59 itemsets frecuentes de tamaño 3.
+- 70 itemsets frecuentes de tamaño 4.
+- 56 itemsets frecuentes de tamaño 5.
+- 28 itemsets frecuentes de tamaño 6.
+- 8 itemsets frecuentes de tamaño 7.
+- 1 itemset frecuente de tamaño 8.
+
+En total se obtuvieron **274 itemsets frecuentes**.
+
+Esto muestra cómo el algoritmo va reduciendo progresivamente el número de combinaciones conforme aumenta el tamaño del conjunto, hasta que ya no se generan nuevos candidatos.
+
+Posteriormente, utilizando un umbral de confianza mínima del **70%**, se aplicó el segundo procedimiento del algoritmo para generar reglas de asociación fuertes. Como resultado, se obtuvieron **5,938 reglas fuertes**.
+
+En los resultados se observa que muchas reglas con confianza igual a 1.0 están relacionadas con categorías marcadas como “DESCONOCIDO”. Esto indica que existe una alta concentración de valores faltantes o no especificados dentro del conjunto de datos, lo cual influye directamente en los patrones detectados.
+
+También se identificaron reglas más interpretables, por ejemplo:
+
+- Personas del grupo de edad 18–29 presentan una alta probabilidad de estar asociadas al sexo masculino.
+- El estatus “DESAPARECIDA” muestra una fuerte relación con el sexo masculino.
+
+
+En general, los resultados confirman que el algoritmo logra identificar combinaciones frecuentes y relaciones condicionales relevantes dentro del dataset, aunque la calidad de los datos (especialmente los valores “DESCONOCIDO”) influye considerablemente en los patrones obtenidos.
+
+La implementación manual permitió comprender con mayor profundidad la lógica interna del algoritmo, especialmente el proceso de generación iterativa y el cálculo explícito de soporte y confianza.

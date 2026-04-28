@@ -11,6 +11,7 @@ book:
   chapters:
     - index.qmd
     - tratamiento.qmd
+    - apriori_manual.qmd
     - apriori.qmd
     - reglas.qmd
     - clasificacion.qmd

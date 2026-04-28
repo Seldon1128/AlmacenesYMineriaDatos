@@ -1,1 +1,162 @@
-# Implementación de algoritmo apriori
+# Implementación de algoritmo Apriori
+
+En esta sección se aplica el algoritmo **Apriori** con el objetivo de identificar patrones frecuentes y generar reglas de asociación dentro del conjunto de datos previamente transformado a valores booleanos.
+
+Cada fila del dataset representa una transacción (registro individual) y cada columna representa un ítem (sexo, grupo de edad, entidad, municipio, año, etc.).
+
+Dado que el dataset contiene 133,888 registros y miles de columnas, es importante definir adecuadamente los parámetros del algoritmo para evitar ruido y sobreajuste.
+
+---
+
+## Carga de datos
+
+```{python}
+import pandas as pd
+from mlxtend.frequent_patterns import apriori, association_rules
+
+# Cargar dataset
+df = pd.read_csv("data/data_secretariado_apriori.csv")
+
+print("Dimensiones del dataset:", df.shape)
+```
+
+---
+
+## Definición de parámetros
+
+### Soporte mínimo
+
+Se define un soporte mínimo de **10% (0.1)**.
+
+Justificación:
+
+- El dataset contiene 133,888 registros.
+- Un soporte de 10% implica que un patrón debe aparecer en al menos 13,388 casos para considerarse relevante.
+- Inicialmente se probó con un soporte de 2% (0.02), lo que generó 4,980 itemsets frecuentes y 134,854 reglas de asociación, dificultando el análisis e interpretación de resultados.
+- Al aumentar el soporte a 10%, se redujo considerablemente el número de resultados, permitiendo enfocarse en patrones más sólidos y representativos del comportamiento general de los datos.
+
+### Confianza mínima
+
+Se define una confianza mínima de **70% (0.7)**.
+
+Justificación:
+
+- Una confianza de 70% garantiza que, dado el antecedente, el consecuente ocurre con alta probabilidad.
+- Permite descartar reglas débiles o poco consistentes.
+- Aumenta la interpretabilidad de resultados.
+
+### Tamaño máximo de los itemsets
+
+Se limitó el tamaño máximo de los itemsets a tres elementos (max_len = 3).
+
+Justificación:
+
+- El algoritmo Apriori genera combinaciones de manera progresiva, y mientras más elementos tenga cada conjunto, el número de posibles combinaciones crece muy rápido.
+- Si no se pone un límite, el algoritmo puede empezar a generar reglas demasiado complejas o difíciles de interpretar.
+- Facilita la interpretación de los patrones encontrados.
+- Evita generar reglas excesivamente específicas o difíciles de analizar.
+
+---
+
+## Generación de Itemsets Frecuentes
+```{python}
+import os
+import pandas as pd
+from mlxtend.frequent_patterns import apriori, association_rules
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
+pd.set_option('display.width', None)
+
+min_support = 0.1
+
+frequent_itemsets = apriori(
+    df,
+    min_support=min_support,
+    use_colnames=True,
+    max_len=3
+)
+
+print("Total itemsets encontrados:", len(frequent_itemsets))
+
+# Ordenar por soporte y resetear índice
+frequent_itemsets = frequent_itemsets.sort_values(
+    by="support",
+    ascending=False
+).reset_index(drop=True)
+
+# Guardar versión original
+frequent_itemsets.to_csv("data/itemsets_frecuentes.csv", index=False)
+
+# Crear copia SOLO para mostrar bonito
+itemsets_display = frequent_itemsets.copy()
+itemsets_display['itemsets'] = itemsets_display['itemsets'].apply(
+    lambda x: ', '.join(list(x))
+)
+
+itemsets_display
+```
+---
+
+## Generación de Reglas de Asociación
+
+```{python}
+min_confidence = 0.7
+
+rules = association_rules(
+    frequent_itemsets,
+    metric="confidence",
+    min_threshold=min_confidence
+)
+
+print("Total reglas encontradas:", len(rules))
+
+# Seleccionar solo métricas importantes
+rules = rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']]
+
+# Convertir a texto legible
+rules['antecedents'] = rules['antecedents'].apply(
+    lambda x: ', '.join(list(x))
+)
+rules['consequents'] = rules['consequents'].apply(
+    lambda x: ', '.join(list(x))
+)
+
+# Ordenar por lift y resetear índice
+rules = rules.sort_values(
+    by="lift",
+    ascending=False
+).reset_index(drop=True)
+
+# Guardar versión final
+rules.to_csv("data/reglas_fuertes.csv", index=False)
+
+rules
+```
+
+---
+
+## Interpretación de Resultados
+
+Con los parámetros definidos (soporte mínimo de 10% y confianza mínima de 70%) se obtuvieron 111 itemsets frecuentes y 379 reglas de asociación, lo cual permitió trabajar con un conjunto de resultados manejable y fácil de analizar.
+
+Las reglas se interpretan principalmente con tres métricas::
+
+- **Support (Soporte):** Indica qué tan frecuente es una combinación dentro del total de registros.
+- **Confidence (Confianza):** Mide qué tan probable es que ocurra el consecuente cuando ocurre el antecedente.
+- **Lift:** Indica qué tan fuerte es la relación entre antecedente y consecuente.
+  - Lift > 1 → Asociación positiva.
+  - Lift = 1 → Independencia.
+  - Lift < 1 → Asociación negativa.
+
+En los resultados obtenidos se observa que varias reglas incluyen categorías como “DESCONOCIDO”. Esto sugiere que existe una cantidad importante de datos faltantes en el sistema, lo cual puede influir en los patrones encontrados. Por ello, es importante interpretar las reglas considerando posibles sesgos derivados de la calidad de los datos.
+
+---
+
+## Conclusión del Análisis Apriori
+
+La aplicación del algoritmo Apriori permitió identificar patrones frecuentes dentro del dataset de manera estructurada y controlada. Ajustar el soporte al 10% fue clave para reducir la cantidad de combinaciones generadas, ya que con un soporte de 2% se obtenían miles de itemsets y más de cien mil reglas, lo que hacía difícil llegar a conclusiones claras.
+
+Limitar el tamaño máximo de los itemsets a tres elementos también ayudó a mantener el análisis enfocado y comprensible, evitando combinaciones demasiado complejas.
+
+En general, esta implementación permitió transformar un conjunto de datos amplio y con muchas variables en reglas claras y analizables. Además, el proceso mostró la importancia de elegir correctamente los parámetros y considerar la calidad de los datos al interpretar los resultados.
