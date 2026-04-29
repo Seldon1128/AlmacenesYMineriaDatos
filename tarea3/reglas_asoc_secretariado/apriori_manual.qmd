@@ -31,21 +31,24 @@ A continuación se describe el primer procedimiento siguiendo el pseudocódigo v
 ### Algoritmo 1: Generación de itemsets frecuentes
 
 **Entrada:**
-- Una base de datos transaccional \( D \).
+
+- Una base de datos transaccional $D$.
+
 - Un valor mínimo de soporte.
 
 **Salida:**
-- El conjunto de todos los itemsets frecuentes en \( D \).
+
+- El conjunto de todos los itemsets frecuentes en $D$.
 
 El procedimiento funciona de la siguiente manera:
 
-1. Se inicia con \( k = 1 \).
-2. Se generan los candidatos de tamaño \( k \) (conjuntos de un solo ítem).
+1. Se inicia con $k = 1$.
+2. Se generan los candidatos de tamaño $k$ (conjuntos de un solo ítem).
 3. Se calcula el soporte de cada candidato recorriendo la base de datos.
-4. Se construye \( F_k \), que contiene únicamente los candidatos que cumplen el soporte mínimo.
-5. Mientras \( F_k \neq \varnothing \):
-   - Se incrementa el tamaño: \( k = k + 1 \).
-   - Se generan nuevos candidatos \( C_k \) combinando los conjuntos frecuentes del nivel anterior.
+4. Se construye $F_k$, que contiene únicamente los candidatos que cumplen el soporte mínimo.
+5. Mientras $F_k \neq \varnothing$:
+   - Se incrementa el tamaño: $k = k + 1$.
+   - Se generan nuevos candidatos $C_k$ combinando los conjuntos frecuentes del nivel anterior.
    - Se calcula el soporte de cada candidato recorriendo nuevamente la base de datos.
    - Se eliminan los candidatos que no cumplen el soporte mínimo.
 6. El algoritmo termina cuando ya no se generan nuevos conjuntos frecuentes.
@@ -79,7 +82,7 @@ El algoritmo se basa en la siguiente propiedad:
 
 Esto significa que si un subconjunto no cumple el soporte mínimo, el algoritmo **ni siquiera genera** combinaciones más grandes que lo contengan.
 
-Por ejemplo, si el conjunto \( \{A, C\} \) no es frecuente, entonces \( \{A, B, C\} \) no puede ser frecuente.  
+Por ejemplo, si el conjunto $\{A, C\}$ no es frecuente, entonces $\{A, B, C\}$ no puede ser frecuente.  
 Por lo tanto, esa combinación no se construye en el siguiente nivel.
 
 Gracias a esta propiedad, el algoritmo evita evaluar muchas combinaciones innecesarias y reduce significativamente la cantidad de cálculos.
@@ -101,44 +104,47 @@ El segundo responde:
 ---
 
 **Entrada:**
+
 - El conjunto de itemsets frecuentes.
-- Un valor mínimo de confianza \( c_{min} \).
+
+- Un valor mínimo de confianza $c_{min}$.
 
 **Salida:**
-- El conjunto \( R \) de reglas de asociación fuertes.
+
+- El conjunto $R$ de reglas de asociación fuertes.
 
 ---
 
 ### Procedimiento
 
 1. Se inicializa el conjunto de reglas como vacío:  
-   \[
+   $$
    R = \varnothing
-   \]
+   $$
 
-2. Para cada itemset frecuente \( I \) de tamaño \( k \geq 2 \):
+2. Para cada itemset frecuente $I$ de tamaño $k \geq 2$:
 
-   - Se generan todos los subconjuntos no vacíos \( s \subset I \).
-   - Para cada subconjunto \( s \), se construye la regla:
+   - Se generan todos los subconjuntos no vacíos $s \subset I$.
+   - Para cada subconjunto $s$, se construye la regla:
      
-     \[
+     $$
      s \Rightarrow (I - s)
-     \]
+     $$
 
 3. Para cada regla generada, se calcula su confianza:
 
-   \[
+   $$
    confidence(s \Rightarrow I-s) =
    \frac{support(I)}{support(s)}
-   \]
+   $$
 
-4. Si la confianza es mayor o igual que \( c_{min} \), la regla se conserva.
+4. Si la confianza es mayor o igual que $c_{min}$, la regla se conserva.
 
 5. Si no cumple el umbral mínimo, la regla se descarta.
 
 6. El proceso se repite para todos los itemsets frecuentes.
 
-7. Finalmente, se devuelve el conjunto de reglas fuertes \( R \).
+7. Finalmente, se devuelve el conjunto de reglas fuertes $R$.
 
 ---
 
@@ -146,18 +152,18 @@ El segundo responde:
 
 Si un conjunto frecuente es:
 
-\[
+$$
 I = \{A, B, C\}
-\]
+$$
 
 El algoritmo intenta convertirlo en reglas posibles:
 
-- \( A \Rightarrow BC \)
-- \( B \Rightarrow AC \)
-- \( C \Rightarrow AB \)
-- \( AB \Rightarrow C \)
-- \( AC \Rightarrow B \)
-- \( BC \Rightarrow A \)
+- $A \Rightarrow BC$
+- $B \Rightarrow AC$
+- $C \Rightarrow AB$
+- $AB \Rightarrow C$
+- $AC \Rightarrow B$
+- $BC \Rightarrow A$
 
 Cada una de estas reglas se evalúa mediante la confianza.
 
