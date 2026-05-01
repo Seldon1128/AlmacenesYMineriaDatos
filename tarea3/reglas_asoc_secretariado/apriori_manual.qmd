@@ -202,6 +202,31 @@ El objetivo es:
 - Calcular su soporte recorriendo la base de datos.
 - Conservar únicamente aquellos que cumplan el soporte mínimo.
 
+### Definición de parámetros
+
+#### Soporte mínimo {.unnumbered}
+
+Se define un soporte mínimo de **10% (0.1)**.
+
+Justificación:
+
+- El dataset contiene 133,888 registros.
+- Un soporte de 10% implica que un patrón debe aparecer en al menos 13,388 casos para considerarse relevante.
+- Inicialmente se probó con un soporte de 5% (0.05), lo que generó 596 itemsets frecuentes y 12,062 reglas de asociación. Al revisar las reglas con mayor lift, más allá de encontrar reglas interesantes, encontramos relaciones obvias como que el origen de reporte esta relacionado con la entidad de desaparición o que si el año o mes de desaparición se relaciona con los de registro. Por lo que decidimos que un 5% no era suficiente para generar asociaciones mayormente interesantes.
+- Además al aumentar el soporte a 10%, se redujo considerablemente el número de resultados, permitiendo enfocarse en patrones más sólidos y representativos del comportamiento general de los datos.
+
+#### Confianza mínima {.unnumbered}
+
+Se define una confianza mínima de **70% (0.7)**.
+
+Justificación:
+
+- Una confianza de 70% garantiza que, dado el antecedente, el consecuente ocurre con alta probabilidad.
+- Permite descartar reglas débiles o poco consistentes.
+- Aumenta la interpretabilidad de resultados.
+
+### Generación Manual de Itemsets Frecuentes
+
 ```{python}
 import pandas as pd
 from itertools import combinations
@@ -308,7 +333,7 @@ print("\nTotal itemsets frecuentes encontrados:", len(frequent_itemsets))
 
 ---
 
-## Generación Manual de Reglas de Asociación Fuertes
+### Generación Manual de Reglas de Asociación
 
 En esta sección se implementa manualmente el Algoritmo 2, el cual toma los itemsets frecuentes generados anteriormente y construye reglas de asociación que cumplan con un umbral mínimo de confianza.
 
@@ -352,18 +377,23 @@ for itemset in frequent_itemsets:
                 
                 support_I = support_dict[itemset]
                 support_A = support_dict[antecedent]
+                support_B = support_dict[consequent]
                 
                 confidence = support_I / support_A
-                
+                lift = confidence / support_B
+
                 if confidence >= min_confidence:
                     rules.append({
                         "antecedent": antecedent,
                         "consequent": consequent,
-                        "support": support_I,
-                        "confidence": confidence
+                        "support_antecedent": support_A,
+                        "support_consequent": support_B,
+                        "support_rule": support_I,
+                        "confidence": confidence,
+                        "lift": lift
                     })
 
-print("\nTotal reglas fuertes encontradas:", len(rules))
+print("\nTotal de reglas encontradas:", len(rules))
 
 # Convertir a DataFrame para visualizar
 rules_df = pd.DataFrame(rules)
@@ -376,9 +406,214 @@ rules_df.sort_values(by="confidence", ascending=False).reset_index(drop=True)
 
 ```
 
+En la siguiente gráfica podemos ver la comparativa entre confianza y lift de cada regla encontrada. Además, es posible comparar qué tan común es el patrón en el conjunto de datos (su soporte), mediante la diferencia del tamaño del punto que lo representa.
+
+```{python}
+import plotly.express as px
+
+def graf_reglas(reglas):
+    reglas["regla"] = (
+        reglas["antecedent"].str.replace(',', '<br>') + "<br> → <br>" + reglas["consequent"].str.replace(',', '<br>')
+    )
+
+    fig = px.scatter(
+        reglas,
+        x="confidence",
+        y="lift",
+        size="support_rule",
+        hover_data={
+            "regla": True,
+            "support_rule": ":.3f",
+            "confidence": ":.3f",
+            "lift": ":.3f",
+        },
+        color="lift",
+        color_continuous_scale="RdYlGn",
+        labels={
+            "confidence": "Confianza",
+            "lift": "Lift",
+            "support_rule": "Soporte",
+        },
+        size_max=28,
+    )
+
+    fig.add_hline(
+        y=1.0,
+        line_dash="dash",
+        line_color="crimson",
+        annotation_text="Lift = 1 (independencia estadística)",
+        annotation_position="top left",
+        annotation_font_color="crimson",
+    )
+
+    fig.update_layout(
+        height=500,
+        xaxis=dict(range=[0, 1.05], title="Confianza"),
+        yaxis=dict(title="Lift"),
+        coloraxis_colorbar=dict(title="Lift"),
+    )
+    return fig
+
+graf_reglas_1 = graf_reglas(rules_df)
+graf_reglas_1.show()
+```
+
+Como vemos todas nuestras reglas se alejan en al menos 0.4 puntos de la independencia estadística lo que nos indica que la co-ocurrencia del antecedente y el consecuente es en buena medida mayor al azar. Otra observación sencilla es que podemos distinguir tres agrupaciones de las reglas: las verdes de la esquina superior derecha, las naranjas de la esquina inferior izquierda y las naranjas en la esquina inferior derecha.
+
+En primera instancia, lo que quisiéramos hacer es revisar las reglas verdes pues no solo son las de mayor tamaño (frecuencia de aparición) sino también las de mayor confianza y lift lo que podría indicar que serán muy informativas. Sin embargo, si las revisamos a detalle, es posible notar que en realidad están fuertemente relacionadas con que en los registros del conjunto de datos original, cuando se tiene un caso en estado confidencial, se desconoce la fecha de nacimiento, el sexo, la fecha de desaparición, la fecha de registro, el estatus de la víctima y el municipio. Lo que a su vez propicia que se desconozca su pertenencia a las categorías creadas durante la discretización de los datos. 
+
+Debido a estas relaciones bien conocidas entre los datos desconocidos, decidimos eliminar las reglas que reflejan las siguientes condiciones:
+
++ Se desconoce el mes de registro y por lo tanto también se desconoce el año (o viceversa)
++ Se desconoce el mes de desaparicion y por lo tanto también se desconoce el año (o viceversa)
++ Se desconoce el grupo de edad y por lo tanto también se desconoce el mes o año de desaparición (o viceversa)
+
+```{python}
+# Reglas que desconocen algún campo de la fecha de registro y en consecuencia los otros también
+mask_registro = (
+    rules_df['antecedent'].str.contains('REGISTRO_DESCONOCIDO', na=False) &
+    rules_df['consequent'].str.contains('REGISTRO_DESCONOCIDO', na=False)
+)
+
+# Reglas que desconocen algún campo de la fecha de desaparición y en consecuencia los otros también
+mask_desap = (
+    rules_df['antecedent'].str.contains('DESAPARICION_DESCONOCIDO', na=False) &
+    rules_df['consequent'].str.contains('DESAPARICION_DESCONOCIDO', na=False)
+)
 
 
---
+# Reglas que desconocen el grupo de edad y en consecuencia la fecha de desaparición
+mask_edad_desap = (
+    rules_df['antecedent'].str.contains('EDAD_DESCONOCIDO', na=False) &
+    rules_df['consequent'].str.contains('DESAPARICION_DESCONOCIDO', na=False)
+)
+
+# Reglas que desconocen la fecha de desaparición y en consecuencia el grupo de edad
+mask_desap_edad = (
+    rules_df['antecedent'].str.contains('DESAPARICION_DESCONOCIDO', na=False) &
+    rules_df['consequent'].str.contains('EDAD_DESCONOCIDO', na=False)
+)
+
+mask_total = mask_registro | mask_desap | mask_edad_desap | mask_desap_edad
+
+# Filtrar
+rules_filtradas = rules_df[~mask_total]
+
+rules_filtradas
+```
+
+Aunque este proceso de filtrado logró reducir el número de reglas de $5,938$ a $2,308$. Aún es posible encontrar asociaciones en las que se ve el efecto de que tener datos confidenciales nos genera desconocimiento en otros atributos. Por ello, decidimos descartar todas las reglas cuyo antecedente es un dato desconocido y cuyo consecuente es otro dato desconocido.
+
+```{python}
+mask_total = (
+    rules_filtradas['antecedent'].str.contains('DESCONOCIDO', na=False) &
+    rules_filtradas['consequent'].str.contains('DESCONOCIDO', na=False)
+)
+rules_filtradas = rules_filtradas[~mask_total]
+
+rules_filtradas.sort_values(
+    by=["support_rule", "confidence", "lift"],
+    ascending=False
+)
+```
+
+Después de este último filtrado obtenemos no solo un menor número de reglas si no asociaciones más interesantes pues ya no reflejan patrones relacionados a la forma en la que se registran los datos sino en el comportamiento real de los mismos.
+
+Ahora bien, si comparamos las métricas de cada regla podemos ver que todas cumplen con los umbrales definidos (soporte mínimo de 0.1 y confianza de 0.7)
+gracias al algoritmo aplicado. También en todas se cumple que la **confianza es mayor a la probabilidad del consecuente** por lo que podemos asegurar que el antecedente tiene influencia en el consecuente. 
+
+```{python}
+graf_reglas_3 = graf_reglas(rules_filtradas)
+graf_reglas_3.show()
+```
+
+Las reglas más comúnes en el dataset son:
+
+* **SEXO_HOMBRE $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA**  y ESTATUS\_VICTIMA_DESAPARECIDA $\Rightarrow$	SEXO_HOMBRE
+* **SEXO_HOMBRE, GRUPO_EDAD_DESCONOCIDO $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA** y ESTATUS_VICTIMA_DESAPARECIDA, GRUPO_EDAD_DESCONOCIDO $\Rightarrow$ SEXO_HOMBRE
+
+Si bien en ambos grupos el soporte de ambas reglas es el mismo, la primera regla de cada grupo tiene un confianza mayor que la segunda, por lo que podemos interpretarlas como:
+
+* **Si una víctima es hombre es 94% probable que su estatus sea desaparecido**, mientras que si una víctima tiene estatus desaparecida es un 76% probable que sea hombre
+* **Si una víctima es hombre y se desconoce su grupo de edad es 93% probable que su estaus sea desaparecida**, mientras que si sabemos que está desaparecida y que se desconoce su edad es 71% probable que sea hombre.
+
+Esto lo que nos indica es que en efecto **los registros de hombres tienen una muy alta probabilidad de pertenecer al estatus desaparecido** independientemente de su grupo de edad (pues solo hay un cambio del 1%), **pero** ese cambio de aproximadamente el 20% al "voltear" las reglas, nos muestra que **el estatus desaparecida no es exclusivo de los hombres**.
+
+Otras reglas que tenemos son:
+
+* SEXO_MUJER $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si la víctima **es mujer es 94% probable que su estatus sea desaparecida** y es un patrón presente en casi el 14% de nuestros datos
+
+* GRUPO_EDAD_18-29 $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si la víctima tiene **entre 18 y 29 años es 94% probable que su estatus sea desaparecida** y es un patrón presente en casi el 13% de nuestros datos
+
+* GRUPO_EDAD_30-44 $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si la víctima tiene **entre 30 y 44 años es 94% probable que su estatus sea desaparecida** y es un patrón presente en el 12% de nuestros datos
+
+* GRUPO_EDAD_18-29 $\Rightarrow$ SEXO_HOMBRE: Si la víctima tiene entre **18 y 29 años es 80% probable que sea hombre** y es un patrón presente en el 11% de nuestros datos
+
+* GRUPO_EDAD_30-44 $\Rightarrow$ SEXO_HOMBRE: Si la víctima tiene entre **30 y 44 años es 86% probable que sea hombre** y es un patrón presente en el 11% de nuestros datos
+
+* GRUPO_EDAD_18-29, SEXO_HOMBRE $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si la víctima tiene entre **18 y 29 años y es hombre, es 94% probable que su estatus sea desaparecida** y es un patrón presente en el 10% de nuestros datos
+
+* GRUPO_EDAD_18-29, ESTATUS_VICTIMA_DESAPARECIDA $\Rightarrow$ SEXO_HOMBRE: Si la víctima tiene entre **18 y 29 años y su estatus es desaparecida es 80% probable que sea hombre** y es un patrón presente en el 10% de nuestros datos
+
+* GRUPO_EDAD_18-29 $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA, SEXO_HOMBRE: Si la víctima tiene entre **18 y 29 años es 76% probable que su estatus sea desaparecida y sea hombre** y es un patrón presente en el 10% de nuestros datos
+
+* GRUPO_EDAD_30-44, SEXO_HOMBRE $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si la víctima tiene entre **30 y 44 años y es hombre es 94% probable que su estatus sea desaparecida** y es un patrón presente en el 10% de nuestros datos
+
+* GRUPO_EDAD_30-44, ESTATUS_VICTIMA_DESAPARECIDA $\Rightarrow$ SEXO_HOMBRE: Si la víctima tiene **estatus desaparecida y entre 30 y 44 años es 86% probable que sea hombre** y es un patrón presente en el 10% de nuestros datos
+
+* GRUPO_EDAD_30-44 $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA, SEXO_HOMBRE: Si la víctima tiene entre **30 y 44 años es 94% probable que su estatus sea desaparecida y que sea hombre** y es un patrón presente en el 10% de nuestros datos
+
+De estas podemos ver que se refleja el desbalance que existe en el conjunto de datos original pues sabemos que estatus de la víctima más común es el de desaparecida.
+
+```{python}
+df_original = pd.read_csv("data/data_secretariado.csv")
+
+# frecuencias absolutas
+conteo = df_original['ESTATUS_VICTIMA'].value_counts().reset_index()
+conteo.columns = ['Estatus', 'Número de registros']
+
+# media y mediana
+s = conteo['Número de registros'].dropna()
+media = s.mean()
+mediana = s.median()
+
+# Gráfica
+fig = px.bar(
+    conteo,
+    x = 'Estatus',
+    y = 'Número de registros',
+    title = 'Número de registros por estatus'
+)
+
+# Línea de la media
+fig.add_hline(
+    y=media,
+    line_dash="dash",
+    line_width=2,
+    annotation_text=f"Media = {media:.2f}",
+    annotation_position="bottom right"
+)
+
+# Línea de la mediana
+fig.add_hline(
+    y=mediana,
+    line_dash="dot",
+    line_width=2,
+    annotation_text=f"Mediana = {mediana:.2f}",
+    annotation_position="top right"
+)
+        
+        
+fig.update_layout(
+    xaxis_title = 'Estatus',
+    yaxis_title = 'Número de registros',
+    xaxis={'categoryorder': 'total descending'}
+)
+
+fig.show()
+```
+
+---
 
 ## Resultados obtenidos
 
@@ -405,9 +640,8 @@ En los resultados se observa que muchas reglas con confianza igual a 1.0 están 
 
 También se identificaron reglas más interpretables, por ejemplo:
 
-- Personas del grupo de edad 18–29 presentan una alta probabilidad de estar asociadas al sexo masculino.
-- El estatus “DESAPARECIDA” muestra una fuerte relación con el sexo masculino.
-
+- El estatus “DESAPARECIDA” muestra una fuerte relación con el sexo masculino aunque no es exclusivo de este sexo pues una víctima mujer también tiene un 94% de probabilidad de tener dicho estatus.
+- Personas de los grupos de edad 18–29 y 30-44 presentan una alta probabilidad, 80% y 86% respectivamente, de estar asociadas al sexo masculino y por ende al estatus “DESAPARECIDA”.
 
 En general, los resultados confirman que el algoritmo logra identificar combinaciones frecuentes y relaciones condicionales relevantes dentro del dataset, aunque la calidad de los datos (especialmente los valores “DESCONOCIDO”) influye considerablemente en los patrones obtenidos.
 
