@@ -16,7 +16,7 @@ El conjunto de datos consta de **133,887 filas**, cada una representando un repo
 ```{python}
 import pandas as pd
 
-df = pd.read_csv("data/data_secretariado.csv")
+df = pd.read_csv("../data/data_secretariado.csv")
 
 print(df.info())
 ```
@@ -202,12 +202,12 @@ df_analisis['AÑO_REGISTRO'] = df_analisis['AÑO_REGISTRO'].astype(str)
 
 df_apriori = df_analisis.copy()
 df_apriori = pd.get_dummies(df_apriori, dtype=bool)
-df_apriori.to_csv("data/data_secretariado_apriori.csv", index=False)
+df_apriori.to_csv("../data/data_secretariado_apriori.csv", index=False)
 print("Dataset preprocesado guardado como 'data_secretariado_apriori.csv'")
 print(f"Dataset guardado: {df_apriori.shape[0]} filas, {df_apriori.shape[1]} columnas")
 
 
-df_analisis.to_csv("data/data_secretariado_clasificacion.csv", index=False)
+df_analisis.to_csv("../data/data_secretariado_clasificacion.csv", index=False)
 print("Dataset preprocesado guardado como 'data_secretariado_clasificacion.csv'")
 print(f"Dataset guardado: {df_analisis.shape[0]} filas, {df_analisis.shape[1]} columnas")
 ```

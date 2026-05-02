@@ -13,7 +13,8 @@ book:
     - tratamiento.qmd
     - apriori_manual.qmd
     - apriori.qmd
-    - reglas.qmd
+    - fp_growth.qmd
+    - comparativa.qmd
     - clasificacion.qmd
     - references.qmd
 

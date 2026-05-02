@@ -1,0 +1,20 @@
+# Comparativa de los algoritmos
+
+Ya que hemos aplicado 3 algoritmos distintos para la obtención de reglas de asociación, nos interesa realizar una comparación de su desempeño. Para ello, responderemos algunas preguntas clave.
+
+
+## Comparativa de desempeño
+
+### ¿Cuál de ellos tarda más? {.unnumbered}
+
+El algoritmo que tarda más en ejecutarse es el Apriori que implementamos nosotros, esto es de esperarse en comparación a FP-Growth pues este segundo se caracteriza por ser más eficiente al evitar la generación de itemsets frecuentes candidatos. Sin embargo, una comparativa un poco más interesante se da con la implementación del algoritmo Apriori de python, pues se basan en el mismo procedimiento de generar candidatos, en este caso la diferencia radica en que la implementación de python permite limitar la longitud de los itemsets frecuentes por lo que realiza menos iteraciones. 
+
+### ¿Cuál tarda menos y por qué? {.unnumbered}
+
+El que tarda menos es FP-Growth pues como mencionamos, optimiza su proceso de obtención de los itemsets frecuentes al no tener que generar todos los candidatos.
+
+###  ¿Generan las mismas reglas de asociación? ¿Por qué? {.unnumbered}
+
+Bajos los mismos parámetros, los tres algoritmos generan las mismas reglas, pues en esencia siguen la misma idea: encontrar los conjuntos frecuentes con base en un soporte mínimo y a partir de ellos generar las reglas de asociación que superen o igualen la confianza mínima.
+
+Aunque en el caso de la aplicación del algoritmo Apriori de python obtuvimos algunas reglas nuevas, esto sucedió como consecuencia de reducir el soporte mínimo y pudimos ver que de hecho parte del resultado era lo que obteníamos con un soporte de 10%.

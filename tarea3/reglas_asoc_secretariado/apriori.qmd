@@ -1,10 +1,12 @@
-# Implementación de algoritmo Apriori
+# Aplicación del algoritmo Apriori de python
 
-En esta sección se aplica el algoritmo **Apriori** con el objetivo de identificar patrones frecuentes y generar reglas de asociación dentro del conjunto de datos previamente transformado a valores booleanos.
+En esta sección se aplica el algoritmo **Apriori** implementado en `mlxtend.frequent_patterns` 
+con el objetivo de identificar patrones frecuentes y generar reglas de asociación dentro del 
+conjunto de datos previamente transformado a valores booleanos.
 
 Cada fila del dataset representa una transacción (registro individual) y cada columna representa un ítem (sexo, grupo de edad, entidad, municipio, año, etc.).
 
-Dado que el dataset contiene 133,888 registros y miles de columnas, es importante definir adecuadamente los parámetros del algoritmo para evitar ruido y sobreajuste.
+Dado que el dataset contiene 133,887 registros y miles de columnas, es importante definir adecuadamente los parámetros del algoritmo para evitar ruido y sobreajuste.
 
 ---
 
@@ -15,7 +17,7 @@ import pandas as pd
 from mlxtend.frequent_patterns import apriori, association_rules
 
 # Cargar dataset
-df = pd.read_csv("data/data_secretariado_apriori.csv")
+df = pd.read_csv("../data/data_secretariado_apriori.csv")
 
 print("Dimensiones del dataset:", df.shape)
 ```
@@ -24,18 +26,21 @@ print("Dimensiones del dataset:", df.shape)
 
 ## Definición de parámetros
 
-### Soporte mínimo
+Si bien en la sección anterior se obtuvieron algunas reglas importantes, para esta segunda aplicación del algoritmo lo
+que hicimos fue relajar un poco el soporte con el fin de permitir una menor ocurrencia de los patrones pero manteniendo la confianza, como un intento de encontrar patrones un poco menos comunes pero con el mismo 
+nivel de influencia entre antecedentes y consecuentes.
 
-Se define un soporte mínimo de **10% (0.1)**.
+### Soporte mínimo {.unnumbered}
+
+Se define un soporte mínimo de **5% (0.05)**.
 
 Justificación:
 
-- El dataset contiene 133,888 registros.
-- Un soporte de 10% implica que un patrón debe aparecer en al menos 13,388 casos para considerarse relevante.
+- El dataset contiene 133,887 registros, un soporte de 5% implica que un patrón debe aparecer en al menos 66,944 casos para considerarse relevante.
 - Inicialmente se probó con un soporte de 2% (0.02), lo que generó 4,980 itemsets frecuentes y 134,854 reglas de asociación, dificultando el análisis e interpretación de resultados.
-- Al aumentar el soporte a 10%, se redujo considerablemente el número de resultados, permitiendo enfocarse en patrones más sólidos y representativos del comportamiento general de los datos.
+- Al aumentar el soporte a 5%, se redujo considerablemente el número de resultados, permitiendo enfocarse en buscar patrones más sólidos y representativos del comportamiento general de los datos.
 
-### Confianza mínima
+### Confianza mínima {.unnumbered}
 
 Se define una confianza mínima de **70% (0.7)**.
 
@@ -45,37 +50,43 @@ Justificación:
 - Permite descartar reglas débiles o poco consistentes.
 - Aumenta la interpretabilidad de resultados.
 
-### Tamaño máximo de los itemsets
+### Tamaño máximo de los itemsets {.unnumbered}
 
 Se limitó el tamaño máximo de los itemsets a tres elementos (max_len = 3).
 
 Justificación:
 
-- El algoritmo Apriori genera combinaciones de manera progresiva, y mientras más elementos tenga cada conjunto, el número de posibles combinaciones crece muy rápido.
+- Como vimos el algoritmo Apriori genera combinaciones de manera progresiva, y mientras más elementos tenga cada conjunto, el número de posibles combinaciones crece muy rápido.
 - Si no se pone un límite, el algoritmo puede empezar a generar reglas demasiado complejas o difíciles de interpretar.
 - Facilita la interpretación de los patrones encontrados.
-- Evita generar reglas excesivamente específicas o difíciles de analizar.
+- Evita generar reglas excesivamente específicas o difíciles de analizar, por ejemplo: Sabemos que un dato confidencial implica hasta 5 datos confidenciales más, el limitar a un número menor de 6 items elimina desde el inicio la posibilidad de generar reglas con ese comportamiento
 
 ---
 
-## Generación de Itemsets Frecuentes
+## Generación de itemsets frecuentes
 ```{python}
 import os
 import pandas as pd
+import time
+
 from mlxtend.frequent_patterns import apriori, association_rules
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_colwidth', None)
 pd.set_option('display.width', None)
 
-min_support = 0.1
+min_support = 0.05
 
+inicio = time.time()
 frequent_itemsets = apriori(
     df,
     min_support=min_support,
     use_colnames=True,
     max_len=3
 )
+
+fin = time.time()
+print(f"Tiempo de ejecución: {fin - inicio:.2f} segundos")
 
 print("Total itemsets encontrados:", len(frequent_itemsets))
 
@@ -86,7 +97,7 @@ frequent_itemsets = frequent_itemsets.sort_values(
 ).reset_index(drop=True)
 
 # Guardar versión original
-frequent_itemsets.to_csv("data/itemsets_frecuentes.csv", index=False)
+frequent_itemsets.to_csv("../data/itemsets_frecuentes.csv", index=False)
 
 # Crear copia SOLO para mostrar bonito
 itemsets_display = frequent_itemsets.copy()
@@ -103,11 +114,15 @@ itemsets_display
 ```{python}
 min_confidence = 0.7
 
+inicio = time.time()
 rules = association_rules(
     frequent_itemsets,
     metric="confidence",
     min_threshold=min_confidence
 )
+
+fin = time.time()
+print(f"Tiempo de ejecución: {fin - inicio:.2f} segundos")
 
 print("Total reglas encontradas:", len(rules))
 
@@ -129,34 +144,227 @@ rules = rules.sort_values(
 ).reset_index(drop=True)
 
 # Guardar versión final
-rules.to_csv("data/reglas_fuertes.csv", index=False)
+rules.to_csv("../data/reglas_fuertes.csv", index=False)
 
 rules
 ```
 
+```{python}
+import plotly.express as px
+
+def graf_reglas(reglas):
+    reglas["regla"] = (
+        reglas["antecedents"].str.replace(',', '<br>') + "<br> → <br>" + reglas["consequents"].str.replace(',', '<br>')
+    )
+
+    fig = px.scatter(
+        reglas,
+        x="confidence",
+        y="lift",
+        size="support",
+        hover_data={
+            "regla": True,
+            "support": ":.3f",
+            "confidence": ":.3f",
+            "lift": ":.3f",
+        },
+        color="lift",
+        color_continuous_scale="RdYlGn",
+        labels={
+            "confidence": "Confianza",
+            "lift": "Lift",
+            "support": "Soporte",
+        },
+        size_max=28,
+    )
+
+    fig.add_hline(
+        y=1.0,
+        line_dash="dash",
+        line_color="crimson",
+        annotation_text="Lift = 1 (independencia estadística)",
+        annotation_position="top left",
+        annotation_font_color="crimson",
+    )
+
+    fig.update_layout(
+        height=500,
+        xaxis=dict(range=[0, 1.05], title="Confianza"),
+        yaxis=dict(title="Lift"),
+        coloraxis_colorbar=dict(title="Lift"),
+    )
+    return fig
+
+graf_reglas_1 = graf_reglas(rules)
+graf_reglas_1.show()
+```
+
+Nuevamente tenemos muchas reglas que reflejan los patrones ya conocidos de los datos faltantes, por lo que filtramos quitando aquellas que reflejan que un dato desconocido propicia otro dato desconocido.
+
+```{python}
+mask_desconocidos = (
+    rules['antecedents'].str.contains('DESCONOCIDO', na=False) &
+    rules['consequents'].str.contains('DESCONOCIDO', na=False)
+)
+rules_filtradas = rules[~mask_desconocidos]
+
+rules_filtradas.sort_values(
+    by=["support", "confidence", "lift"],
+    ascending=False
+)
+
+graf_reglas_1 = graf_reglas(rules_filtradas)
+graf_reglas_1.show()
+```
+
+De las reglas restantes muchas de ellas asocian la entidad y el origen del reporte pues comúnmente son del mismo estado, sin embargo este es un comportamiento un poco obvio pues en la mayoría de los casos el lugar de desaparición será el lugar donde se hará el reporte. Por ello, decidimos eliminar las reglas que contenían el mismo estado en ambos lados. Tomando en cuenta que los estados más comunes son Jalisco, Estado de México y Tamaulipas.
+
+```{python}
+df_original = pd.read_csv("../data/data_secretariado.csv")
+
+# frecuencias absolutas
+conteo = df_original['ENTIDAD'].value_counts().reset_index()
+conteo.columns = ['Entidad', 'Número de registros']
+
+# media y mediana
+s = conteo['Número de registros'].dropna()
+media = s.mean()
+mediana = s.median()
+
+# Gráfica
+fig = px.bar(
+    conteo,
+    x = 'Entidad',
+    y = 'Número de registros',
+    title = 'Número de registros por entidad'
+)
+
+# Línea de la media
+fig.add_hline(
+    y=media,
+    line_dash="dash",
+    line_width=2,
+    annotation_text=f"Media = {media:.2f}",
+    annotation_position="bottom right"
+)
+
+# Línea de la mediana
+fig.add_hline(
+    y=mediana,
+    line_dash="dot",
+    line_width=2,
+    annotation_text=f"Mediana = {mediana:.2f}",
+    annotation_position="top right"
+)
+        
+        
+fig.update_layout(
+    xaxis_title = 'Entidad',
+    yaxis_title = 'Número de registros',
+    xaxis={'categoryorder': 'total descending'}
+)
+
+fig.show()
+```
+
+```{python}
+mask_estados = (
+    (rules_filtradas['antecedents'].str.contains('JALISCO', na=False) &
+    rules_filtradas['consequents'].str.contains('JALISCO', na=False)) |
+    (rules_filtradas['antecedents'].str.contains('ESTADO DE MÉXICO', na=False) &
+    rules_filtradas['consequents'].str.contains('ESTADO DE MÉXICO', na=False)) |
+    (rules_filtradas['antecedents'].str.contains('TAMAULIPAS', na=False) &
+    rules_filtradas['consequents'].str.contains('TAMAULIPAS', na=False))
+)
+
+rules_filtradas2 = rules_filtradas[~mask_estados]
+
+rules_filtradas2.sort_values(
+    by=["support", "confidence", "lift"],
+    ascending=False
+)
+
+graf_reglas_1 = graf_reglas(rules_filtradas2)
+graf_reglas_1.show()
+```
+
+Dado que tenemos algunas que se asocian porque el año de registro y desaparición es el mismo, también decidimos descartarlas.
+
+```{python}
+import re
+
+def mismo_anio(row):
+    ant = row['antecedents']
+    cons = row['consequents']
+    
+    # Extraer año (4 dígitos)
+    ant_year = re.search(r'\d{4}', ant)
+    cons_year = re.search(r'\d{4}', cons)
+    
+    if ant_year and cons_year:
+        return ant_year.group() == cons_year.group()
+    
+    return False
+
+mask_mismo_anio = rules_filtradas2.apply(mismo_anio, axis=1)
+rules_filtradas2 = rules_filtradas2[~mask_mismo_anio]
+```
+
+En este punto podemos ver que existe un **problema de consistencia** al momento de registrar a la "COMISION LOCAL DE BUSQUEDA DE PERSONAS DEL ESTADO DE MEXICO" pues hace falta el acento y por ello no fue filtrada correctamente la regla que la asocia a "ENTIDAD_ESTADO DE MÉXICO".
+
+```{python}
+rules_filtradas2 = rules_filtradas2.drop(rules_filtradas2.index[0])
+
+rules_filtradas2 = rules_filtradas2.sort_values(
+    by=["support", "confidence", "lift"],
+    ascending=False
+)
+```
+
+Las primeras 15 reglas obtenidas son las que ya analizamos en la sección anterior, por lo que nos centramos en las restantes:
+
+```{python}
+rules_filtradas2 = rules_filtradas2.drop(rules_filtradas2.index[:15])
+rules_filtradas2
+```
+
+* ENTIDAD_JALISCO $\Rightarrow$ GRUPO_EDAD_DESCONOCIDO: Si la víctima pertenece a **Jalisco es 83% probable que su grupo de edad sea desconocido** y es un patrón presente en aproximadamente el 9% de los datos
+
+* ENTIDAD_ESTADO DE MÉXICO $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si la víctima pertenece al **Estado de México es 72% probable que su estatus sea desaparecida** y es un patrón presente en casi el 7.7% de los datos
+
+* ENTIDAD_TAMAULIPAS $\Rightarrow$ GRUPO_EDAD_DESCONOCIDO: Si la víctima pertenece a **Tamaulipas es 72% probable que su grupo de edad sea desconocido** y es un patrón presente en aproximadamente el 7.2% de los datos
+
+* ORIGEN_REPORTE_PROCURADURIA GENERAL DE JUSTICIA DEL ESTADO DE TAMAULIPAS $\Rightarrow$ GRUPO_EDAD_DESCONOCIDO: Si el registro proviene de la **Procuraduría General de Justicia del Estado de Tamaulipas es 73% probable que el grupo de edad sea desconocido** y es un patrón presente en el 6.6% de los datos
+
+* GRUPO_EDAD_DESCONOCIDO, SEXO_MUJER $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si la víctima es **mujer y su grupo de edad es desconocido es 94% probable que su estatus sea desaparecida** y es un patrón presente en el 6.4% de los datos
+
+* ORIGEN_REPORTE_FISCALIA GENERAL DE JALISCO $\Rightarrow$ GRUPO_EDAD_DESCONOCIDO: Si el registro proviene de la **Fiscalía General de Jalisco es 83% probable que el grupo de edad sea desconocido** y es un patrón presente en el 6.4% de los datos
+
+* AÑO_REGISTRO_2024 $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si el **registro corresponde al año 2024 es 99.6% probable que el estatus sea desaparecida** y es un patrón presente en el 6.0% de los datos
+
+* AÑO_DESAPARICION_2024 $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si la **desaparición ocurrió en 2024 es 99.6% probable que el estatus sea desaparecida** y es un patrón presente en el 5.9% de los datos
+
+* AÑO_REGISTRO_2025 $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si el **registro corresponde a 2025 es 99.8% probable que el estatus sea desaparecida** y es un patrón presente en el 5.1% de los datos
+
+* AÑO_DESAPARICION_2025 $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si la **desaparición ocurrió en 2025 es 99.8% probable que el estatus sea desaparecida** y es un patrón presente en el 5.1% de los datos
+
+* MES_REGISTRO_Mayo $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si el **registro ocurrió en mayo es 94.7% probable que el estatus sea desaparecida** y es un patrón presente en el 5.0% de los datos
+
+* MES_REGISTRO_Junio $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA: Si el **registro ocurrió en junio es 94.0% probable que el estatus sea desaparecida** y es un patrón presente en el 5.0% de los datos
+
+Aunque estas reglas son definitivamente más específicas que las de la sección pasada, si las vemos en conjunto podemos notar que una vez más están reflejando la alta presencia del estatus de la víctima como desaparecida y la ausencia de las fechas para el cálculo de la edad.
+
 ---
 
-## Interpretación de Resultados
+## Conclusión del Algoritmo Apriori de Python
 
-Con los parámetros definidos (soporte mínimo de 10% y confianza mínima de 70%) se obtuvieron 111 itemsets frecuentes y 379 reglas de asociación, lo cual permitió trabajar con un conjunto de resultados manejable y fácil de analizar.
+Con los parámetros definidos (soporte mínimo de 5% y confianza mínima de 70%) se obtuvieron 211 itemsets frecuentes y 490 reglas de asociación, lo cual permitió comparar dos valores para el soporte mínimo. Para el análisis de las reglas, nos basamos en el soporte, la confianza y el lift de cada una.
 
-Las reglas se interpretan principalmente con tres métricas::
+La aplicación del algoritmo en este caso con un parámetro más flexible no permitió identificar patrones significativamente más informativos. No obstante, ajustar el soporte al 5% fue clave para reducir la cantidad de combinaciones generadas, ya que con un soporte de 2% se obtenían miles de itemsets y más de cien mil reglas, lo que hacía difícil llegar a conclusiones claras.
 
-- **Support (Soporte):** Indica qué tan frecuente es una combinación dentro del total de registros.
-- **Confidence (Confianza):** Mide qué tan probable es que ocurra el consecuente cuando ocurre el antecedente.
-- **Lift:** Indica qué tan fuerte es la relación entre antecedente y consecuente.
-  - Lift > 1 → Asociación positiva.
-  - Lift = 1 → Independencia.
-  - Lift < 1 → Asociación negativa.
+Limitar el tamaño máximo de los itemsets a tres elementos también ayudó a mantener el análisis enfocado y comprensible, evitando combinaciones demasiado específicas.
 
-En los resultados obtenidos se observa que varias reglas incluyen categorías como “DESCONOCIDO”. Esto sugiere que existe una cantidad importante de datos faltantes en el sistema, lo cual puede influir en los patrones encontrados. Por ello, es importante interpretar las reglas considerando posibles sesgos derivados de la calidad de los datos.
+En general, el proceso mostró la importancia de elegir correctamente los parámetros y considerar la calidad de los datos al interpretar los resultados.
 
----
-
-## Conclusión del Análisis Apriori
-
-La aplicación del algoritmo Apriori permitió identificar patrones frecuentes dentro del dataset de manera estructurada y controlada. Ajustar el soporte al 10% fue clave para reducir la cantidad de combinaciones generadas, ya que con un soporte de 2% se obtenían miles de itemsets y más de cien mil reglas, lo que hacía difícil llegar a conclusiones claras.
-
-Limitar el tamaño máximo de los itemsets a tres elementos también ayudó a mantener el análisis enfocado y comprensible, evitando combinaciones demasiado complejas.
-
-En general, esta implementación permitió transformar un conjunto de datos amplio y con muchas variables en reglas claras y analizables. Además, el proceso mostró la importancia de elegir correctamente los parámetros y considerar la calidad de los datos al interpretar los resultados.
+* **Generación de itemsets frecuentes** $\approx$ 0.73 segundos
+* **Generación de reglas** $\approx$ 0.00 segundos

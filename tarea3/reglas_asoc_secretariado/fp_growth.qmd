@@ -1,0 +1,180 @@
+# Aplicación del algoritmo FP-Growth 
+
+En esta sección se aplica el algoritmo **FP-Growth** con el objetivo de identificar patrones frecuentes y generar reglas de asociación dentro del conjunto de datos previamente transformado a valores booleanos.
+
+Cada fila del dataset representa una transacción (registro individual) y cada columna representa un ítem (sexo, grupo de edad, entidad, municipio, año, etc.).
+
+Dado que el dataset contiene 133,887 registros y miles de columnas, es importante definir adecuadamente los parámetros del algoritmo para evitar ruido y sobreajuste.
+
+---
+
+## Carga de datos
+
+```{python}
+import pandas as pd
+import time
+from mlxtend.frequent_patterns import fpgrowth
+from mlxtend.frequent_patterns import association_rules
+
+# Cargar dataset
+df = pd.read_csv("../data/data_secretariado_apriori.csv")
+
+print("Dimensiones del dataset:", df.shape)
+```
+
+---
+
+## Definición de parámetros
+
+En este caso se mantuvieron los parámetros de la implementación de Apriori pues bajar el soporte dispararía el número de reglas y subirlo nos orilla a obtener reglas centradas en las categorías más presentes en el dataset original.
+
+### Soporte mínimo
+
+Se define un soporte mínimo de **10% (0.1)**.
+
+Justificación:
+
+- El dataset contiene 133,887 registros, un soporte de 10% implica que un patrón debe aparecer en al menos 13,388 casos para considerarse relevante.
+- Un porcentaje más alto resulta muy restrictivo debido al gran desbalance que hay en los datos, tanto por los datos desconocidos como por el estatus de víctima desaparecida.
+
+### Confianza mínima
+
+Se define una confianza mínima de **70% (0.7)**.
+
+Justificación:
+
+- Una confianza de 70% garantiza que, dado el antecedente, el consecuente ocurre con alta probabilidad.
+- Permite descartar reglas débiles o poco consistentes.
+- Aumenta la interpretabilidad de resultados.
+
+---
+
+## Generación de itemsets frecuentes
+```{python}
+inicio = time.time()
+frequent_itemsets = fpgrowth(
+    df,
+    min_support=0.1,
+    use_colnames=True
+)
+
+frequent_itemsets
+fin = time.time()
+print(f"Tiempo de ejecución: {fin - inicio:.2f} segundos")
+```
+---
+
+## Generación de Reglas de Asociación
+
+```{python}
+min_confidence = 0.7
+
+inicio = time.time()
+
+rules = association_rules(
+    frequent_itemsets,
+    metric="confidence",
+    min_threshold=min_confidence
+)
+
+fin = time.time()
+print(f"Tiempo de ejecución: {fin - inicio:.2f} segundos")
+print("\nTotal reglas encontradas:", len(rules))
+
+# Seleccionar solo métricas importantes
+rules = rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']]
+
+# Convertir a texto legible
+rules['antecedents'] = rules['antecedents'].apply(
+    lambda x: ', '.join(list(x))
+)
+rules['consequents'] = rules['consequents'].apply(
+    lambda x: ', '.join(list(x))
+)
+
+# Ordenar por lift y resetear índice
+rules = rules.sort_values(
+    by="lift",
+    ascending=False
+).reset_index(drop=True)
+
+rules
+```
+
+```{python}
+import plotly.express as px
+
+def graf_reglas(reglas):
+    reglas["regla"] = (
+        reglas["antecedents"].str.replace(',', '<br>') + "<br> → <br>" + reglas["consequents"].str.replace(',', '<br>')
+    )
+
+    fig = px.scatter(
+        reglas,
+        x="confidence",
+        y="lift",
+        size="support",
+        hover_data={
+            "regla": True,
+            "support": ":.3f",
+            "confidence": ":.3f",
+            "lift": ":.3f",
+        },
+        color="lift",
+        color_continuous_scale="RdYlGn",
+        labels={
+            "confidence": "Confianza",
+            "lift": "Lift",
+            "support": "Soporte",
+        },
+        size_max=28,
+    )
+
+    fig.add_hline(
+        y=1.0,
+        line_dash="dash",
+        line_color="crimson",
+        annotation_text="Lift = 1 (independencia estadística)",
+        annotation_position="top left",
+        annotation_font_color="crimson",
+    )
+
+    fig.update_layout(
+        height=500,
+        xaxis=dict(range=[0, 1.05], title="Confianza"),
+        yaxis=dict(title="Lift"),
+        coloraxis_colorbar=dict(title="Lift"),
+    )
+    return fig
+
+graf_reglas_1 = graf_reglas(rules)
+graf_reglas_1.show()
+```
+
+Al quitar las reglas que relacionan datos desconocidos con otros datos desconocidos, obtenemos las mismas reglas que en la aplicación del algoritmo Apriori que implementamos.
+
+```{python}
+mask_total = (
+    rules['antecedents'].str.contains('DESCONOCIDO', na=False) &
+    rules['consequents'].str.contains('DESCONOCIDO', na=False)
+)
+rules_filtradas = rules[~mask_total]
+
+rules_filtradas.sort_values(
+    by=["support", "confidence", "lift"],
+    ascending=False
+)
+
+graf_reglas_1 = graf_reglas(rules_filtradas)
+graf_reglas_1.show()
+
+rules_filtradas
+```
+---
+
+## Conclusión de Algoritmo FP-Growth
+
+Al aplicar este último algoritmo obtenemos las mismas reglas pero con un tiempo de ejecución mucho menor, debido a que este algoritmo hace más eficiente la creación de reglas al no tener que generar itemsets candidatos a ser frecuentes.
+
+* **Generación de itemsets frecuentes** $\approx$ 1.58 segundos
+* **Generación de reglas** $\approx$ 0.02 segundos

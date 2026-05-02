@@ -208,12 +208,7 @@ El objetivo es:
 
 Se define un soporte mínimo de **10% (0.1)**.
 
-Justificación:
-
-- El dataset contiene 133,888 registros.
-- Un soporte de 10% implica que un patrón debe aparecer en al menos 13,388 casos para considerarse relevante.
-- Inicialmente se probó con un soporte de 5% (0.05), lo que generó 596 itemsets frecuentes y 12,062 reglas de asociación. Al revisar las reglas con mayor lift, más allá de encontrar reglas interesantes, encontramos relaciones obvias como que el origen de reporte esta relacionado con la entidad de desaparición o que si el año o mes de desaparición se relaciona con los de registro. Por lo que decidimos que un 5% no era suficiente para generar asociaciones mayormente interesantes.
-- Además al aumentar el soporte a 10%, se redujo considerablemente el número de resultados, permitiendo enfocarse en patrones más sólidos y representativos del comportamiento general de los datos.
+Justificación: El dataset contiene 133,887 registros por lo que un soporte de 10% implica que un patrón debe aparecer en al menos 13,388 casos para considerarse relevante. Un valor más alto podría limitar la generación de reglas debido al desbalance en las categorías que presenta el conjunto de datos original.
 
 #### Confianza mínima {.unnumbered}
 
@@ -229,13 +224,14 @@ Justificación:
 
 ```{python}
 import pandas as pd
+import time
 from itertools import combinations
 
 # =========================
 # Cargar datos
 # =========================
 
-df = pd.read_csv("data/data_secretariado_apriori.csv")
+df = pd.read_csv("../data/data_secretariado_apriori.csv")
 
 # Convertimos cada fila en un conjunto de ítems verdaderos
 transactions = []
@@ -280,6 +276,8 @@ current_frequent = []
 print("\nGenerando F1...")
 
 item_counts = {}
+
+inicio = time.time()
 
 for transaction in transactions:
     for item in transaction:
@@ -327,6 +325,9 @@ while current_frequent:
     current_frequent = new_frequent
     frequent_itemsets.extend(new_frequent)
 
+fin = time.time()
+print(f"\nTiempo de ejecución: {fin - inicio:.2f} segundos")
+
 print("\nTotal itemsets frecuentes encontrados:", len(frequent_itemsets))
 
 ```
@@ -353,6 +354,8 @@ print("\nConfianza mínima:", min_confidence)
 # Para poder calcular confidence necesitamos conocer support(I) y support(s)
 
 support_dict = {}
+
+inicio = time.time()
 
 for itemset in frequent_itemsets:
     support_dict[itemset] = calculate_support(itemset) / n_transactions
@@ -392,6 +395,9 @@ for itemset in frequent_itemsets:
                         "confidence": confidence,
                         "lift": lift
                     })
+
+fin = time.time()
+print(f"\nTiempo de ejecución: {fin - inicio:.2f} segundos")
 
 print("\nTotal de reglas encontradas:", len(rules))
 
@@ -465,7 +471,7 @@ En primera instancia, lo que quisiéramos hacer es revisar las reglas verdes pue
 Debido a estas relaciones bien conocidas entre los datos desconocidos, decidimos eliminar las reglas que reflejan las siguientes condiciones:
 
 + Se desconoce el mes de registro y por lo tanto también se desconoce el año (o viceversa)
-+ Se desconoce el mes de desaparicion y por lo tanto también se desconoce el año (o viceversa)
++ Se desconoce el mes de desaparición y por lo tanto también se desconoce el año (o viceversa)
 + Se desconoce el grupo de edad y por lo tanto también se desconoce el mes o año de desaparición (o viceversa)
 
 ```{python}
@@ -517,7 +523,7 @@ rules_filtradas.sort_values(
 )
 ```
 
-Después de este último filtrado obtenemos no solo un menor número de reglas si no asociaciones más interesantes pues ya no reflejan patrones relacionados a la forma en la que se registran los datos sino en el comportamiento real de los mismos.
+Después de este último filtrado obtenemos no solo un menor número de reglas sino asociaciones más interesantes pues ya no reflejan patrones relacionados a la forma en la que se registran los datos sino en el comportamiento real de los mismos.
 
 Ahora bien, si comparamos las métricas de cada regla podemos ver que todas cumplen con los umbrales definidos (soporte mínimo de 0.1 y confianza de 0.7)
 gracias al algoritmo aplicado. También en todas se cumple que la **confianza es mayor a la probabilidad del consecuente** por lo que podemos asegurar que el antecedente tiene influencia en el consecuente. 
@@ -527,12 +533,12 @@ graf_reglas_3 = graf_reglas(rules_filtradas)
 graf_reglas_3.show()
 ```
 
-Las reglas más comúnes en el dataset son:
+Las reglas más comunes en el dataset son:
 
 * **SEXO_HOMBRE $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA**  y ESTATUS\_VICTIMA_DESAPARECIDA $\Rightarrow$	SEXO_HOMBRE
 * **SEXO_HOMBRE, GRUPO_EDAD_DESCONOCIDO $\Rightarrow$ ESTATUS_VICTIMA_DESAPARECIDA** y ESTATUS_VICTIMA_DESAPARECIDA, GRUPO_EDAD_DESCONOCIDO $\Rightarrow$ SEXO_HOMBRE
 
-Si bien en ambos grupos el soporte de ambas reglas es el mismo, la primera regla de cada grupo tiene un confianza mayor que la segunda, por lo que podemos interpretarlas como:
+Si bien en ambos grupos el soporte de ambas reglas es el mismo, la primera regla de cada grupo tiene una confianza mayor que la segunda, por lo que podemos interpretarlas como:
 
 * **Si una víctima es hombre es 94% probable que su estatus sea desaparecido**, mientras que si una víctima tiene estatus desaparecida es un 76% probable que sea hombre
 * **Si una víctima es hombre y se desconoce su grupo de edad es 93% probable que su estaus sea desaparecida**, mientras que si sabemos que está desaparecida y que se desconoce su edad es 71% probable que sea hombre.
@@ -566,7 +572,7 @@ Otras reglas que tenemos son:
 De estas podemos ver que se refleja el desbalance que existe en el conjunto de datos original pues sabemos que estatus de la víctima más común es el de desaparecida.
 
 ```{python}
-df_original = pd.read_csv("data/data_secretariado.csv")
+df_original = pd.read_csv("../data/data_secretariado.csv")
 
 # frecuencias absolutas
 conteo = df_original['ESTATUS_VICTIMA'].value_counts().reset_index()
@@ -615,7 +621,7 @@ fig.show()
 
 ---
 
-## Resultados obtenidos
+## Conclusión del Algoritmo Apriori Manual
 
 A partir de la implementación manual del algoritmo Apriori se trabajó con un total de **133,887 transacciones** y un soporte mínimo equivalente al **10%** (13,388 registros aproximadamente).
 
@@ -636,13 +642,25 @@ Esto muestra cómo el algoritmo va reduciendo progresivamente el número de comb
 
 Posteriormente, utilizando un umbral de confianza mínima del **70%**, se aplicó el segundo procedimiento del algoritmo para generar reglas de asociación fuertes. Como resultado, se obtuvieron **5,938 reglas fuertes**.
 
+Las reglas se interpretan principalmente con tres métricas:
+
+- **Support (Soporte):** Indica qué tan frecuente es una combinación dentro del total de registros.
+- **Confidence (Confianza):** Mide qué tan probable es que ocurra el consecuente cuando ocurre el antecedente.
+- **Lift:** Indica qué tan fuerte es la relación entre antecedente y consecuente.
+  - Lift > 1 → Asociación positiva.
+  - Lift = 1 → Independencia.
+  - Lift < 1 → Asociación negativa.
+
 En los resultados se observa que muchas reglas con confianza igual a 1.0 están relacionadas con categorías marcadas como “DESCONOCIDO”. Esto indica que existe una alta concentración de valores faltantes o no especificados dentro del conjunto de datos, lo cual influye directamente en los patrones detectados.
 
 También se identificaron reglas más interpretables, por ejemplo:
 
 - El estatus “DESAPARECIDA” muestra una fuerte relación con el sexo masculino aunque no es exclusivo de este sexo pues una víctima mujer también tiene un 94% de probabilidad de tener dicho estatus.
-- Personas de los grupos de edad 18–29 y 30-44 presentan una alta probabilidad, 80% y 86% respectivamente, de estar asociadas al sexo masculino y por ende al estatus “DESAPARECIDA”.
+- Personas de los grupos de edad 18–29 y 30-44 presentan una alta probabilidad, 80% y 86% respectivamente, de estar asociadas al sexo masculino y, por ende, al estatus “DESAPARECIDA”.
 
 En general, los resultados confirman que el algoritmo logra identificar combinaciones frecuentes y relaciones condicionales relevantes dentro del dataset, aunque la calidad de los datos (especialmente los valores “DESCONOCIDO”) influye considerablemente en los patrones obtenidos.
 
 La implementación manual permitió comprender con mayor profundidad la lógica interna del algoritmo, especialmente el proceso de generación iterativa y el cálculo explícito de soporte y confianza.
+
+* **Generación de itemsets frecuentes** $\approx$ 4.29 segundos
+* **Generación de reglas** $\approx$ 3.40 segundos
