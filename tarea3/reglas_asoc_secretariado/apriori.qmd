@@ -215,6 +215,8 @@ rules_filtradas.sort_values(
 
 graf_reglas_1 = graf_reglas(rules_filtradas)
 graf_reglas_1.show()
+
+print(f"Reglas obtenidas: {len(rules_filtradas)}")
 ```
 
 De las reglas restantes muchas de ellas asocian la entidad y el origen del reporte pues comúnmente son del mismo estado, sin embargo este es un comportamiento un poco obvio pues en la mayoría de los casos el lugar de desaparición será el lugar donde se hará el reporte. Por ello, decidimos eliminar las reglas que contenían el mismo estado en ambos lados. Tomando en cuenta que los estados más comunes son Jalisco, Estado de México y Tamaulipas.
@@ -286,6 +288,8 @@ rules_filtradas2.sort_values(
 
 graf_reglas_1 = graf_reglas(rules_filtradas2)
 graf_reglas_1.show()
+
+print(f"Reglas obtenidas: {len(rules_filtradas2)}")
 ```
 
 Dado que tenemos algunas que se asocian porque el año de registro y desaparición es el mismo, también decidimos descartarlas.
@@ -308,6 +312,8 @@ def mismo_anio(row):
 
 mask_mismo_anio = rules_filtradas2.apply(mismo_anio, axis=1)
 rules_filtradas2 = rules_filtradas2[~mask_mismo_anio]
+
+print(f"Reglas obtenidas: {len(rules_filtradas2)}")
 ```
 
 En este punto podemos ver que existe un **problema de consistencia** al momento de registrar a la "COMISION LOCAL DE BUSQUEDA DE PERSONAS DEL ESTADO DE MEXICO" pues hace falta el acento y por ello no fue filtrada correctamente la regla que la asocia a "ENTIDAD_ESTADO DE MÉXICO".
@@ -319,12 +325,19 @@ rules_filtradas2 = rules_filtradas2.sort_values(
     by=["support", "confidence", "lift"],
     ascending=False
 )
+
+graf_reglas_1 = graf_reglas(rules_filtradas2)
+graf_reglas_1.show()
 ```
 
 Las primeras 15 reglas obtenidas son las que ya analizamos en la sección anterior, por lo que nos centramos en las restantes:
 
 ```{python}
 rules_filtradas2 = rules_filtradas2.drop(rules_filtradas2.index[:15])
+
+graf_reglas_1 = graf_reglas(rules_filtradas2)
+graf_reglas_1.show()
+
 rules_filtradas2
 ```
 

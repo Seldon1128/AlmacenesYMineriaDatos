@@ -58,9 +58,10 @@ frequent_itemsets = fpgrowth(
     use_colnames=True
 )
 
-frequent_itemsets
 fin = time.time()
 print(f"Tiempo de ejecución: {fin - inicio:.2f} segundos")
+
+frequent_itemsets
 ```
 ---
 
