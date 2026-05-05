@@ -9,7 +9,7 @@ La tarea 3 de la materia de **Almacenes y Minería de Datos** tiene como objetiv
 
 ## Requerimientos:
 Para la visualización de esta tarea se requiere tener instalado lo siguiente:
-* Python 3.8 o superior (Si no lo tienes instalado, puedes descargarlo desde [aquí](https://www.python.org/downloads/))
+* Python 3.13.12 o 3.13.13 (Si no lo tienes instalado, puedes descargarlo desde [aquí](https://www.python.org/downloads/))
 * Quarto 1.9 o superior (Si no lo tienes instalado, puedes descargarlo desde [aquí](https://quarto.org/docs/download/))
 
 ## Instrucciones para ejecutar el código:
