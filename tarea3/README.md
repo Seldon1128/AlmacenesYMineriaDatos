@@ -57,3 +57,8 @@ También puedes ejecutar el código para la visualización utilizando el siguien
 quarto preview
 ```
 Esto abrirá una ventana en tu navegador con la visualización de la implementación, aplicación y análisis de los distintos algoritmos.
+
+## Presentación de resultados
+
+En el siguiente link se puede consultar una presentación de Canva con los resultados obtenidos del proyecto.
+[aquí](https://canva.link/5uu4ecbkc3qb2xg)
