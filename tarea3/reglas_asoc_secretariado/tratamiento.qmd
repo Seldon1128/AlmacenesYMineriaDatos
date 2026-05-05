@@ -92,9 +92,9 @@ fig = px.bar(
     color='Estado',
     text='Porcentaje',
     color_discrete_map={
-        'Faltante': '#c60e0e',
-        'Confidencial': '#fce301',
-        'Válido': '#67d116'
+        'Faltante': '#821300',
+        'Confidencial': '#015dfc',
+        'Válido': '#2e9302'
     }
 )
 
