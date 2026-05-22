@@ -1,0 +1,336 @@
+# Similitud Coseno
+
+## Introducción Teórica
+
+La **Similitud Coseno** es una operación matemática que permite cuantificar el grado de similitud entre dos vectores. 
+
+En términos simples, mide qué tan parecidos son dos conjuntos de datos representados numéricamente.
+
+Mientras que otras medidas (como la distancia Euclídea) miden qué tan lejos están dos puntos, la similitud coseno mide qué tan alineados están en el espacio.
+
+Es decir:
+
+- No compara magnitud.
+- Compara dirección.
+- Mide el ángulo entre vectores.
+
+Puede interpretarse como comparar flechas:
+
+- Si apuntan en la misma dirección → son muy similares.
+- Si forman un ángulo recto → no están relacionadas.
+- Si apuntan en direcciones opuestas → son opuestas.
+
+Matemáticamente, los valores oscilan entre -1 y 1:
+
+- 1 → vectores exactamente en la misma dirección.
+- 0 → vectores ortogonales (sin relación direccional).
+- -1 → vectores en direcciones opuestas.
+
+Esta medida es base fundamental de muchas aplicaciones de Machine Learning e Inteligencia Artificial, como:
+
+- Sistemas de recomendación
+- Reconocimiento facial
+- Búsqueda de documentos
+- Procesamiento de lenguaje natural
+
+Muchos sistemas digitales modernos funcionan midiendo similitud.
+
+---
+
+## ¿Qué es un Vector?
+
+Un **vector** es una forma compacta de representar un dato numéricamente.
+
+Por ejemplo, si representamos una persona con:
+
+- Edad
+- Peso
+- Altura
+
+Podemos escribir:
+
+Persona A:
+\[
+(25, 70, 1.75)
+\]
+
+Persona B:
+\[
+(30, 80, 1.80)
+\]
+
+Cada característica es una dimensión del vector.
+
+En reconocimiento facial, un embedding es simplemente una representación vectorial del rostro en muchas dimensiones.
+
+---
+
+## Fórmulas
+
+La **Similitud Coseno** entre dos vectores \( \vec{a} \) y \( \vec{b} \) se define como:
+
+$$
+\text{similitud}(\vec{a}, \vec{b}) =
+\frac{\vec{a} \cdot \vec{b}}{||\vec{a}|| \, ||\vec{b}||}
+$$
+
+Donde:
+
+- $( \vec{a} \cdot \vec{b} )$ es el **producto punto**.
+- $( ||\vec{a}|| )$ es la **magnitud** del vector \( \vec{a} \).
+- $( ||\vec{b}|| )$ es la **magnitud** del vector \( \vec{b} \).
+
+### Producto Punto
+
+$( \vec{a} \cdot \vec{b} = a_1 b_1 + a_2 b_2 + a_3 b_3 )$
+
+Se obtiene multiplicando las componentes correspondientes de cada vector y sumando los resultados.
+
+### Magnitud del Vector
+
+$( \lVert \vec{v} \rVert = \sqrt{x^2 + y^2 + z^2} )$
+
+Se calcula elevando cada componente al cuadrado, sumando los valores y aplicando raíz cuadrada.
+
+---
+
+## Procedimiento de Cálculo
+
+1. **Calcular el producto punto de los vectores.**  
+   Multiplicar las componentes correspondientes y sumar los resultados.
+
+2. **Calcular la magnitud de cada vector.**  
+   Obtener la raíz cuadrada de la suma de los cuadrados de sus componentes.
+
+3. **Multiplicar las magnitudes de ambos vectores.**
+
+4. **Dividir el producto punto entre el producto de las magnitudes.**
+
+5. **Interpretar el resultado.**  
+   El valor obtenido estará entre -1 y 1 y representa el grado de similitud direccional entre los vectores.
+
+---
+
+## Ejemplo Aplicado (Comparación de Personas)
+
+Supongamos que queremos medir qué tan similares son tres personas en términos de:
+
+- Horas de estudio por semana
+- Horas de ejercicio por semana
+
+Representamos cada persona como un vector:
+
+Persona A:
+$$
+(10, 5)
+$$
+
+Persona B:
+$$
+(8, 4)
+$$
+
+Persona C:
+$$
+(2, 9)
+$$
+
+La idea es cuantificar qué tan similares son sus estilos de vida.
+
+---
+
+### Similitud entre A y B
+
+Producto punto:
+
+$$
+(10 \times 8) + (5 \times 4) = 80 + 20 = 100
+$$
+
+Magnitudes:
+
+$$
+||A|| = \sqrt{10^2 + 5^2} = \sqrt{100 + 25} = \sqrt{125}
+$$
+
+$$
+||B|| = \sqrt{8^2 + 4^2} = \sqrt{64 + 16} = \sqrt{80}
+$$
+
+Similitud:
+
+$$
+\text{sim}(A,B) =
+\frac{100}{\sqrt{125} \times \sqrt{80}}
+$$
+
+Aproximadamente:
+
+$$
+\text{sim}(A,B) \approx 0.999
+$$
+
+Interpretación:
+
+A y B tienen proporciones muy similares entre estudio y ejercicio, por eso la similitud es casi perfecta.
+
+---
+
+### Similitud entre A y C
+
+Producto punto:
+
+$$
+(10 \times 2) + (5 \times 9) = 20 + 45 = 65
+$$
+
+Magnitudes:
+
+$$
+||C|| = \sqrt{2^2 + 9^2} = \sqrt{4 + 81} = \sqrt{85}
+$$
+
+Similitud:
+
+$$
+\text{sim}(A,C) =
+\frac{65}{\sqrt{125} \times \sqrt{85}}
+$$
+
+Aproximadamente:
+
+$$
+\text{sim}(A,C) \approx 0.63
+$$
+
+Interpretación:
+
+A y C no tienen la misma proporción entre estudio y ejercicio, por lo tanto la similitud disminuye.
+
+---
+
+### Similitud entre B y C
+
+Producto punto:
+
+$$
+(8 \times 2) + (4 \times 9) = 16 + 36 = 52
+$$
+
+Similitud:
+
+$$
+\text{sim}(B,C) =
+\frac{52}{\sqrt{80} \times \sqrt{85}}
+$$
+
+Aproximadamente:
+
+$$
+\text{sim}(B,C) \approx 0.63
+$$
+
+---
+
+## Conclusión del Ejemplo
+
+- A y B son casi idénticos en proporción.
+- A y C son moderadamente similares.
+- B y C también muestran similitud moderada.
+
+Este ejemplo muestra que la similitud coseno no compara cantidades absolutas, sino la dirección o proporción entre variables.
+
+Es útil cuando queremos identificar patrones de comportamiento similares, aunque los valores no sean exactamente iguales.
+
+A continuación se muestran los vectores que representan a cada persona en el plano (Estudio vs Ejercicio):
+
+```{python}
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Definir vectores
+A = np.array([10, 5])
+B = np.array([8, 4])
+C = np.array([2, 9])
+
+plt.figure(figsize=(6,6))
+
+# Dibujar vectores desde el origen
+plt.quiver(0, 0, A[0], A[1], angles='xy', scale_units='xy', scale=1)
+plt.quiver(0, 0, B[0], B[1], angles='xy', scale_units='xy', scale=1)
+plt.quiver(0, 0, C[0], C[1], angles='xy', scale_units='xy', scale=1)
+
+# Etiquetas
+plt.text(A[0], A[1], " A (10,5)", fontsize=12)
+plt.text(B[0], B[1], " B (8,4)", fontsize=12)
+plt.text(C[0], C[1], " C (2,9)", fontsize=12)
+
+# Configuración del plano
+plt.xlim(0, 12)
+plt.ylim(0, 12)
+plt.xlabel("Estudio (horas por semana)")
+plt.ylabel("Ejercicio (horas por semana)")
+plt.title("Vectores que representan a cada persona")
+plt.grid(True)
+
+plt.show()
+```
+
+---
+
+## Distancia Coseno
+
+La **Distancia Coseno** se define como:
+
+$$
+d_{cos}(A,B) = 1 - \text{Similitud Coseno}(A,B)
+$$
+
+Se utiliza cuando un algoritmo requiere una **medida de distancia** en lugar de una medida de similitud, especialmente en métodos de clustering o modelos que trabajan con distancias.
+
+Mientras menor sea la distancia coseno, mayor será la similitud entre los vectores.
+
+---
+
+## Casos de Aplicación
+
+### 1. Sistemas de recomendación
+
+Se representan usuarios como vectores de preferencias y se comparan mediante similitud coseno para recomendar productos similares.
+
+### 2. Procesamiento de texto
+
+Cada documento se representa como un vector (TF-IDF).
+La similitud coseno mide qué tan similares son dos textos.
+
+### 3. Reconocimiento facial
+
+Cada rostro se transforma en un embedding (vector numérico).
+Se comparan vectores para determinar si pertenecen a la misma persona.
+
+---
+
+## ¿Cuándo conviene usar Similitud Coseno?
+
+Conviene usarla cuando:
+
+- Importa la proporción, no la magnitud.
+- Los datos tienen alta dimensionalidad.
+- Se trabaja con texto o embeddings.
+- Se quiere comparar patrones de comportamiento.
+
+No es ideal cuando:
+
+- La magnitud representa información importante.
+- Se requiere una distancia física real.
+
+---
+
+## Conclusión
+
+La similitud coseno es una herramienta poderosa para cuantificar semejanza entre vectores.
+
+No mide distancia absoluta, sino alineación direccional.
+
+Es fundamental en múltiples aplicaciones modernas de Machine Learning.
