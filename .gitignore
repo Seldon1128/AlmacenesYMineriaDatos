@@ -10,3 +10,6 @@ _book/
 
 # Datasets
 */data
+
+.DS_Store
+**/.DS_Store
