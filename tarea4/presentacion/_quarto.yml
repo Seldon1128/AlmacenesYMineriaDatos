@@ -1,0 +1,31 @@
+project:
+  type: book
+
+book:
+  title: "FundamentosDeProximidad"
+  author: "Arlet Pinacho Báez, 
+   Isaac Giovani Escobar Gónzalez,
+   Kevin Jonathan Garduño Escobar,
+   Seldon Sautto Ramírez"
+  date: "22/5/2026"
+  chapters:
+    - index.qmd
+    - fundamentos.qmd
+    - coseno.qmd
+    - distancias.qmd
+    - normalizacion.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    code-fold: true
+    theme:
+      - cosmo
+      - brand
+  pdf:
+    documentclass: scrreprt
+
+
+

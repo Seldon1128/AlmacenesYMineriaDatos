@@ -1,0 +1,3 @@
+# Introducción {.unnumbered}
+
+En este documento se desarrollan los fundamentos de proximidad en minería de datos, incluyendo medidas de distancia y similitud, así como técnicas de escalamiento y normalización.
