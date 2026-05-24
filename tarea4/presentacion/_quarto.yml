@@ -2,7 +2,7 @@ project:
   type: book
 
 book:
-  title: "FundamentosDeProximidad"
+  title: "Fundamentos De Proximidad"
   author: "Arlet Pinacho Báez, 
    Isaac Giovani Escobar Gónzalez,
    Kevin Jonathan Garduño Escobar,
@@ -11,8 +11,8 @@ book:
   chapters:
     - index.qmd
     - fundamentos.qmd
-    - coseno.qmd
     - distancias.qmd
+    - coseno.qmd
     - normalizacion.qmd
     - references.qmd
 

@@ -1,0 +1,264 @@
+# Distancias
+
+## Distancia Euclideana
+
+Sean $a$ y $b$ dos objetos con $p$ atributos numéricos, su distancia euclidiana se calcula mediante la fórmula:
+
+$$d(a,b) = \sqrt{(x_{a1} - x_{b1})^2 + (x_{a2} - x_{b2})^2 + \cdots + (x_{ap} - x_{bp})^2}$$
+
+Esta distancia es de las más conocidas pues **representa el camino más corto** entre dos puntos en el espacio euclideano.
+
+Utilizando las funciones de NumPy se puede implementar como se muestra a continuación.
+
+```{python} 
+#| code-fold: false
+import numpy as np
+
+# función
+def distancia_euclideana(a, b):
+    return np.sqrt(np.sum((np.array(a) - np.array(b))**2))
+```
+
+```{python}
+# ejemplo 
+obj_a = (1, 2)
+obj_b = (4, 6)
+distancia_2d = distancia_euclideana(obj_a, obj_b)
+print(f"La distancia Euclideana 2D entre {obj_a} y {obj_b} es de {distancia_2d:.2f}")
+```
+
+O bien, es posible utilizar la versión ya implementada y optimizada de SciPy.
+
+```{python} 
+#| code-fold: false
+from scipy.spatial.distance import euclidean
+
+distancia_scipy = euclidean(obj_a, obj_b)
+print(f"La distancia Euclideana 2D entre {obj_a} y {obj_b} es de {distancia_scipy:.2f}")
+```
+
+### Limitaciones
+
+Si bien la distancia euclideana es muy útil gracias a que es fácil de entender y nos garantiza el camino más corto, tiene algunas limitaciones importantes, como lo son las siguientes.
+
+#### Sensibilidad a la escala {.unnumbered}
+
+Para ver como la escala en la que se representan nuestros datos es fundamental para el cálculo de esta medida de distancia veremos un ejemplo.
+
+Supogamos que tenemos tres clientes, de los cuales conocemos su edad y su ingreso mensual en pesos mexicanos.
+
+```{python}
+#| code-fold: false
+# clientes: (edad, ingreso_mensual)
+cliente_a = (25, 8_000)
+cliente_b = (26, 82_000)
+cliente_c = (55, 9_000)
+```
+
+Y queremos ver que cliente se parece más al cliente A. 
+
+Ocupando nuestra función `distancia_euclideana` implementada anteriormente, calculamos su distancia y obtenemos:
+
+```{python}
+print("--- Sin escalar ---")
+print(f"Distancia entre cliente A y cliente B: {distancia_euclideana(cliente_a, cliente_b):.1f}")
+print(f"Distancia entre cliente A y cliente C: {distancia_euclideana(cliente_a, cliente_c):.1f}")
+```
+
+Con estos resultados podemos ver que el cliente más cercano al cliente A es el cliente C, aún cuando la diferencia en edad es de 30 años. Entonces, si escalamos nuestros datos, restando la media y dividiendo entre la desviación estándar tenemos lo siguiente.
+
+```{python}
+#| code-fold: false
+datos = np.array([cliente_a, cliente_b, cliente_c], dtype=float)
+
+media = datos.mean(axis=0)
+std = datos.std(axis=0)
+
+datos_escalados = (datos - media) / std
+
+a_s, b_s, c_s = datos_escalados
+
+print("--- Con Z-Score ---")
+print(f"Distancia entre cliente A y cliente B: {distancia_euclideana(a_s, b_s):.3f}")
+print(f"Distancia entre cliente A y cliente C: {distancia_euclideana(a_s, c_s):.3f}")
+```
+
+Ahora los resultados han cambiado pues vemos que el cliente más cercano al cliente A es en reaidad el cliente B.
+
+Pero, ¿cómo sabemos que el segundo resultado es el que esperamos?. Bueno, al **no escalar** lo que tenemos es un rango en las edades de $55 - 25 = 30$ mientras que en los ingresos se tiene un rango de $8,2000 - 8,000 = 74,000$ por lo que al obtener la diferencia entre los atributos de los clientes, el valor a obtener puede ser mucho mayor para el ingreso mensual que para la edad y al elevar al cuadrado dicha diferencia se vuleve más evidente que **la diferencia de ingreso pesa mucho más que una diferencia en la edad**. Por otro lado, al aplicar **Z-score** lo que hacemos es **restar la media para obtener cuánto se aleja del valor promedio** y al **dividir se obtiene cuántas desviaciones estándar representa** esa distancia del valor promedio. De forma que ambas variables se miden en desviaciones estándar, y **la diferencia de ingreso pesa exactamente lo mismo que una diferencia en la edad**.
+
+#### Sensibilidad a valores atípicos {.unnumbered}
+
+Para esta segunda limitación, supongamos que tenemos un conjunto de datos en el que se registran las características de 3 casas.
+
+```{python}
+#| code-fold: false
+# casas: [m2, habitaciones, antiguedad_años, precio]
+casa_a = (80, 3, 10, 1_200_000)
+casa_b = (82, 3, 11, 1_250_000)
+casa_c = (81, 3, 10, 15_000_000)
+```
+
+En las tres el número de metros cuadrados es bastante similar pues el rango es de 2 $m^2$, el número de habitaciones es el mismo y el rango de la antigüedad es de tan solo 1 año. Además, el precio de las casas A y B es muy similar, pero la casa C tiene un diferencia de al menos $13,750,000 con respecto a las otras.
+
+Al calcular su distancia euclidiana obtenemos los siguientes resultados.
+
+```{python}
+print(f"Distancia entre A y B:  {distancia_euclideana(casa_a, casa_b):>12.1f}")
+print(f"Distancia entre A y C:  {distancia_euclideana(casa_a, casa_c):>12.1f}")
+```
+
+```{python}
+datos = np.array([casa_a, casa_b, casa_c], dtype=float)
+
+media = datos.mean(axis=0)
+std = datos.std(axis=0)
+std_seguro = np.where(std == 0, 1, std)
+
+datos_escalados = (datos - media) / std_seguro
+
+a_s, b_s, c_s = datos_escalados
+
+print("--- Con Z-Score ---")
+print(f"Distancia entre A y B: {distancia_euclideana(a_s, b_s):.3f}")
+print(f"Distancia entre A y C: {distancia_euclideana(a_s, c_s):.3f}")
+```
+
+En ellos, vemos que la diferencia de la casa A a la casa C parece abismal en comparación con la casa B, lo que es cierto si solo nos fijamos en el precio, pero **poco informativo si queremos tomar en cuenta que en el resto de los atributos las casas son muy similares**.
+
+
+## Distancia Manhattan
+
+Sean $a$ y $b$ dos objetos con $p$ atributos discretos, su distancia Manhattan se calcula mediante la fórmula:
+
+$$d(a,b) = |x_{a1} - x_{b1}| + |x_{a2} - x_{b2}| + \cdots + |x_{ap} - x_{bp}|$$
+
+En python podemos definirla como se muestra a continuación.
+
+```{python}
+#| code-fold: false
+def distancia_manhattan(a, b):
+    return np.sum(np.abs(np.array(a) - np.array(b)))
+```
+
+A diferencia de la distancia euclideana, la distancia Manhattan no mide el camnino más corto entre los puntos, pues al sumar la diferencia absoluta atributo a atributo lo que mide, más intuitivamente, es el camino que recorrería un taxi en una ciudad cuadriculada.
+
+```{python}
+import matplotlib.pyplot as plt
+
+a = (1, 1)
+b = (4, 5)
+
+dis_euc = distancia_euclideana(a, b)
+dis_man = distancia_manhattan(a, b)
+
+fig, ax = plt.subplots(figsize=(5, 5))
+
+# Euclídeana
+ax.plot([a[0], b[0]], [a[1], b[1]], color="#534AB7", linewidth=2.5,
+        label=f"Euclídea = {dis_euc:.2f}")
+
+# Manhattan
+ax.plot([a[0], b[0], b[0]], [a[1], a[1], b[1]], color="#ba177b", linewidth=2.5,
+        linestyle="--", label=f"Manhattan = {dis_man:.2f}")
+
+# Anotaciones de los segmentos Manhattan
+ax.annotate("", xy=(b[0], a[1]), xytext=(a[0], a[1]),
+            arrowprops=dict(arrowstyle="->", color="#ba177b", lw=1.2))
+ax.text((a[0] + b[0]) / 2, a[1] - 0.3, f"Δx = {b[0]-a[0]}",
+        ha="center", color="#ba177b", fontsize=10)
+
+ax.annotate("", xy=(b[0], b[1]), xytext=(b[0], a[1]),
+            arrowprops=dict(arrowstyle="->", color="#ba177b", lw=1.2))
+ax.text(b[0] + 0.2, (a[1] + b[1]) / 2, f"Δy = {b[1]-a[1]}",
+        va="center", color="#ba177b", fontsize=10)
+
+# Puntos
+ax.scatter(*a, color="#534AB7")
+ax.scatter(*b, color="#534AB7")
+
+ax.set_xticks(range(5))
+ax.set_yticks(range(5))
+
+ax.grid(True, linestyle="--", alpha=0.3)
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.legend(loc="upper left")
+ax.set_aspect("equal")
+plt.tight_layout()
+plt.show()
+```
+
+También, es posible utilizar la versión ya implementada de SciPy.
+
+```{python}
+#| code-fold: false
+from scipy.spatial.distance import cityblock
+
+dis_man_scipy = cityblock(a, b)
+print(f"La distancia Manhattan entre {a} y {b} es de {dis_man_scipy}")
+```
+
+### Limitaciones
+
+En este caso la distancia Manhattan también tiene limitaciones como sensibilidad a la escala y a la presencia de outliers; aunque, debido a la ausencia de la potencia al cuadrado que utiliza la distancia euclidiana, el impacto es menor en comparación. La principal diferencia entre ambas distancias es que Manhattan es más restrictiva al no permitir diagonales por lo que en espacios donde no se tiene esa restricción podría ser mejor la distancia euclidiana.
+
+## Distancia de Hamming
+
+Sean $a$ y $b$ dos objetos con $p$ atributos categóricos, su distancia de Hamming se calcula mediante la fórmula:
+
+$$d(a,b) = (x_{a1} \neq x_{b1}) + (x_{a2} \neq x_{b2}) + \cdots + (x_{ap} \neq x_{bp})$$
+
+Cada condición se evalúa de forma booleana, por lo que cada término es 1 o 0. 
+
+Se puede implementar como se muestra a continuación.
+
+```{python} 
+#función
+def distancia_hamming(a, b):
+    return np.sum(np.array(a) != np.array(b)) / len(np.array(a))
+```
+
+O bien se puede usar la versión de SciPy.
+
+```{python}
+from scipy.spatial.distance import hamming
+
+x = [1, 0, 1, 1, 0]
+y = [1, 1, 1, 0, 0]
+
+print(f"Hamming (propia): {distancia_hamming(x, y):.2f}")
+print(f"Hamming SciPy: {hamming(x, y):.2f}")
+```
+## Distancia de Gower
+
+Sean $a$ y $b$ dos objetos con $p$ atributos mixtos, su distancia de Gower se calcula mediante la fórmula:
+
+$$d(a,b) = \sum_{i=1}^p \delta (x_{ai}, x_{bi})$$
+
+$$\delta (x_{ai}, x_{bi}) = \begin{cases}
+    1 & \text{si } x_{ai} \text{ y } x_{bi} \text{ son nominales y distintos.}\\
+    0 & \text{si } x_{ai} \text{ y } x_{bi} \text{ son nominales e iguales.}\\
+    \frac{|x_{ai}-x_{bi}|}{rango(i)} & \text{si } x_{ai} \text{ y } x_{bi} \text{ son numericos.}
+\end{cases}$$
+
+Una opción de implementación para esta distancia es la que se muestra a continuación.
+
+```{python}
+#| code-fold: false
+def distancia_gower(a, b, tipos, rangos):
+    a, b = np.array(a, dtype=object), np.array(b, dtype=object)
+    contribuciones = 0
+
+    for i in range(len(a)):
+        if tipos[i] == 'n':
+            d = abs(float(a[i]) - float(b[i])) / rangos[i]
+        else:
+            d = 0 if a[i] == b[i] else 1
+        contribuciones += d
+
+    return contribuciones
+```
+
+Por su naturaleza para el manejo de datos mixtos, para su cálculo es necesario saber el tipo de variable al que corresponde cada atributo y el rango de aquellas que son numéricas, por lo que además de los dos objetos a evaluar, es necesaria una lista en la que se especifica por cada catributo, si es categórico o numérico y otra lista con los rangos de cada atributo (0 si es categórica).
+
