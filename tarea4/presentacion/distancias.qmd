@@ -129,7 +129,7 @@ En ellos, vemos que la diferencia de la casa A a la casa C parece abismal en com
 
 ## Distancia Manhattan
 
-Sean $a$ y $b$ dos objetos con $p$ atributos discretos, su distancia Manhattan se calcula mediante la fórmula:
+Sean $a$ y $b$ dos objetos con $p$ atributos numéricos, su distancia Manhattan se calcula mediante la fórmula:
 
 $$d(a,b) = |x_{a1} - x_{b1}| + |x_{a2} - x_{b2}| + \cdots + |x_{ap} - x_{bp}|$$
 
@@ -140,14 +140,23 @@ En python podemos definirla como se muestra a continuación.
 def distancia_manhattan(a, b):
     return np.sum(np.abs(np.array(a) - np.array(b)))
 ```
-
-A diferencia de la distancia euclideana, la distancia Manhattan no mide el camnino más corto entre los puntos, pues al sumar la diferencia absoluta atributo a atributo lo que mide, más intuitivamente, es el camino que recorrería un taxi en una ciudad cuadriculada.
+También, es posible utilizar la versión ya implementada de SciPy.
 
 ```{python}
-import matplotlib.pyplot as plt
+#| code-fold: false
+from scipy.spatial.distance import cityblock
 
 a = (1, 1)
 b = (4, 5)
+
+dis_man_scipy = cityblock(a, b)
+print(f"La distancia Manhattan entre {a} y {b} es de {dis_man_scipy}")
+```
+
+A diferencia de la distancia euclideana, la distancia Manhattan no mide el camino más corto entre los puntos, pues al sumar la diferencia absoluta atributo a atributo lo que mide, más intuitivamente, es el camino que recorrería un taxi en una ciudad cuadriculada.
+
+```{python}
+import matplotlib.pyplot as plt
 
 dis_euc = distancia_euclideana(a, b)
 dis_man = distancia_manhattan(a, b)
@@ -188,20 +197,9 @@ ax.set_aspect("equal")
 plt.tight_layout()
 plt.show()
 ```
-
-También, es posible utilizar la versión ya implementada de SciPy.
-
-```{python}
-#| code-fold: false
-from scipy.spatial.distance import cityblock
-
-dis_man_scipy = cityblock(a, b)
-print(f"La distancia Manhattan entre {a} y {b} es de {dis_man_scipy}")
-```
-
 ### Limitaciones
 
-En este caso la distancia Manhattan también tiene limitaciones como sensibilidad a la escala y a la presencia de outliers; aunque, debido a la ausencia de la potencia al cuadrado que utiliza la distancia euclidiana, el impacto es menor en comparación. La principal diferencia entre ambas distancias es que Manhattan es más restrictiva al no permitir diagonales por lo que en espacios donde no se tiene esa restricción podría ser mejor la distancia euclidiana.
+La distancia Manhattan también tiene limitaciones como sensibilidad a la escala y a la presencia de outliers, pero debido a la ausencia de la potencia al cuadrado que utiliza la distancia euclidiana, el impacto es menor en comparación. La principal diferencia entre ambas distancias es que Manhattan es más restrictiva al no permitir diagonales por lo que en espacios donde no se tiene esa restricción podría ser mejor la distancia euclidiana.
 
 ## Distancia de Hamming
 
@@ -214,22 +212,32 @@ Cada condición se evalúa de forma booleana, por lo que cada término es 1 o 0.
 Se puede implementar como se muestra a continuación.
 
 ```{python} 
+#| code-fold: false
 #función
 def distancia_hamming(a, b):
-    return np.sum(np.array(a) != np.array(b)) / len(np.array(a))
+    return np.sum(np.array(a) != np.array(b))
 ```
 
-O bien se puede usar la versión de SciPy.
+O bien se puede usar la versión de SciPy pero hay que tomar en cuenta que esta añade una división al final entre el número de atributos del objeto para normalizar el resultado.
 
 ```{python}
+#| code-fold: false
 from scipy.spatial.distance import hamming
 
 x = [1, 0, 1, 1, 0]
 y = [1, 1, 1, 0, 0]
 
 print(f"Hamming (propia): {distancia_hamming(x, y):.2f}")
+print(f"Hamming (propia normalizada): {distancia_hamming(x, y)/len(x):.2f}")
 print(f"Hamming SciPy: {hamming(x, y):.2f}")
 ```
+
+### Limitaciones
+
+Algunas limitaciones importantes de este tipo de distancia que hay que tomar en cuenta al momento de elegir son las siguientes.
+
+#### Diseñado para variables categóricas
+
 ## Distancia de Gower
 
 Sean $a$ y $b$ dos objetos con $p$ atributos mixtos, su distancia de Gower se calcula mediante la fórmula:
