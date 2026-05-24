@@ -1,0 +1,460 @@
+```{python}
+#| echo: false
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from scipy.spatial.distance import euclidean
+
+plt.rcParams.update({
+    "figure.dpi": 120,
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+    "font.family": "sans-serif",
+    "axes.titlesize": 11,
+    "axes.labelsize": 10,
+})
+
+# Ejemplo de un mini-dataset con atributos en diferentes escalas
+personas = ["A", "B", "C"]
+data = {
+    "Persona":           personas,
+    "Salario (MXN/mes)": [15000, 15500, 15200],
+    "Edad (años)":       [25, 55, 40],
+}
+df = pd.DataFrame(data)
+X  = df[["Salario (MXN/mes)", "Edad (años)"]].values
+pares = [("A", "B", 0, 1), ("A", "C", 0, 2), ("B", "C", 1, 2)]
+```
+
+## El Problema de las Diferentes Escalas
+
+Al aplicar algoritmos de minería de datos que dependen de medidas de proximidad
+(como la **distancia euclídea**, la **distancia Manhattan** o la **similitud coseno**),
+nos enfrentamos a un problema fundamental: la magnitud de las variables.
+
+Los datos deben estar escalados para evitar que algún atributo con un rango de
+valores mucho mayor que los otros predomine al momento de calcular las distancias.
+Si los atributos no comparten un marco de referencia comparable, el espacio
+geométrico se distorsiona: las variables numéricas con rangos más amplios
+**dominan artificialmente** el cálculo de distancia, minimizando o anulando
+por completo la contribución de otras variables que, aunque numéricamente menores,
+pueden ser igualmente relevantes para el problema.
+
+> **Definición.** El *problema de las escalas* surge cuando los atributos del
+> conjunto de datos tienen rangos de variación heterogéneos, lo que provoca que
+> las métricas de distancia queden sesgadas hacia los atributos de mayor magnitud
+> numérica, independientemente de su relevancia para el problema.
+
+## Pequeño ejemplo: Impacto de la escala en la distancia euclídea
+
+La distancia euclídea entre dos objetos $a$ y $b$ con $p$ atributos se define como:
+
+$$
+d(a, b) = \sqrt{\sum_{i=1}^{p}(x_{ai} - x_{bi})^2}
+$$
+
+Para ilustrar el problema, considere el siguiente conjunto de datos bancario con
+los atributos **Salario mensual (MXN)** y **Edad (años)**:
+
+```{python}
+#| echo: false
+df.set_index("Persona")
+```
+
+Calculamos la distancia euclídea entre la Persona **A** y la Persona **B** sin
+ningún escalamiento previo:
+
+$$
+d(A, B) = \sqrt{(15{,}000 - 15{,}500)^2 + (25 - 55)^2}
+= \sqrt{(-500)^2 + (-30)^2}
+= \sqrt{250{,}000 + 900}
+= \sqrt{250{,}900} \approx 500.9
+$$
+
+```{python}
+#| echo: false
+contrib_sal  = np.array([(X[i,0]-X[j,0])**2 for _,_,i,j in pares])
+contrib_edad = np.array([(X[i,1]-X[j,1])**2 for _,_,i,j in pares])
+total        = contrib_sal + contrib_edad
+
+registros = []
+for k, (_, _, i, j) in enumerate(pares):
+    registros.append({
+        "Par":              f"{personas[i]} — {personas[j]}",
+        "Contrib. Salario": f"{contrib_sal[k]:,.0f}",
+        "Contrib. Edad":    f"{contrib_edad[k]:,.0f}",
+        "Distancia Total":  f"{np.sqrt(total[k]):.1f}",
+        "% Salario":        f"{contrib_sal[k]/total[k]*100:.1f} %",
+        "% Edad":           f"{contrib_edad[k]/total[k]*100:.1f} %",
+    })
+pd.DataFrame(registros).set_index("Par")
+```
+
+**Análisis de la distorsión.** El término del salario aporta **250,000** al
+cálculo bajo la raíz cuadrada, mientras que la edad aporta apenas **900**.
+Una diferencia de 30 años de vida (un cambio generacional completo) es
+matemáticamente aplastada por una diferencia de 500 pesos en el salario.
+El algoritmo percibe a las personas basándose casi exclusivamente en lo que
+ganan, ignorando por completo su edad.
+
+> **Conclusión.** Para que todos los atributos contribuyan de manera equitativa
+> al cálculo de similitud, es indispensable transformarlos a una escala común
+> antes de aplicar cualquier algoritmo de clustering o clasificación basado en
+> distancias.
+
+---
+
+## Técnicas de Escalamiento
+
+El escalamiento (también denominado normalización o estandarización) es el proceso
+de transformar los valores de los atributos a un rango o distribución común, de
+modo que ningún atributo domine a los demás por razones puramente de magnitud.
+Las dos técnicas más utilizadas son:
+
+1. **Normalización Min-Max** — proyecta los valores al intervalo $[0, 1]$.
+2. **Estandarización Z-score** — centra los datos en media 0 con desviación estándar 1.
+
+### Normalización Min-Max
+
+#### Fundamento teórico
+
+La normalización Min-Max reescala cada atributo de forma **lineal** al intervalo
+$[0, 1]$. La transformación garantiza que el valor mínimo del atributo original
+se mapea a 0 y el máximo a 1:
+
+$$
+\boxed{x'_i = \frac{x_i - x_{\min}}{x_{\max} - x_{\min}}}
+$$
+
+donde $x_{\min}$ y $x_{\max}$ son el mínimo y el máximo del atributo en el
+conjunto de datos, y $x'_i \in [0, 1]$ siempre.
+
+#### Desarrollo paso a paso
+
+Identificamos los parámetros de cada atributo:
+
+- Salario: $x_{\min} = 15{,}000$, $x_{\max} = 15{,}500$, Rango $= 500$
+- Edad: $x_{\min} = 25$, $x_{\max} = 55$, Rango $= 30$
+
+**Persona A** (15,000 ; 25):
+
+$$
+\text{Salario}'_A = \frac{15{,}000 - 15{,}000}{500} = 0.000
+\qquad
+\text{Edad}'_A = \frac{25 - 25}{30} = 0.000
+\quad \Rightarrow \quad \mathbf{A'} = (0.000,\ 0.000)
+$$
+
+**Persona B** (15,500 ; 55):
+
+$$
+\text{Salario}'_B = \frac{15{,}500 - 15{,}000}{500} = 1.000
+\qquad
+\text{Edad}'_B = \frac{55 - 25}{30} = 1.000
+\quad \Rightarrow \quad \mathbf{B'} = (1.000,\ 1.000)
+$$
+
+**Persona C** (15,200 ; 40):
+
+$$
+\text{Salario}'_C = \frac{15{,}200 - 15{,}000}{500} = 0.400
+\qquad
+\text{Edad}'_C = \frac{40 - 25}{30} = 0.500
+\quad \Rightarrow \quad \mathbf{C'} = (0.400,\ 0.500)
+$$
+
+```{python}
+scaler_mm = MinMaxScaler()
+X_mm      = scaler_mm.fit_transform(X)
+
+df_mm = pd.DataFrame(X_mm, columns=["Salario Min-Max", "Edad Min-Max"],
+                     index=personas)
+df_mm.insert(0, "Salario Original", X[:, 0])
+df_mm.insert(2, "Edad Original",    X[:, 1])
+df_mm.round(3)
+```
+
+**Recalculo de distancias tras Min-Max:**
+
+```{python}
+#| echo: false
+rows_mm = []
+for _, _, i, j in pares:
+    d = euclidean(X_mm[i], X_mm[j])
+    rows_mm.append({"Par":               f"{personas[i]} — {personas[j]}",
+                    "Distancia Min-Max": f"{d:.4f}"})
+pd.DataFrame(rows_mm).set_index("Par")
+```
+
+Ahora cada atributo contribuye equitativamente: la distancia entre A y B es
+la mayor (difieren tanto en salario como en edad), lo que resulta conceptualmente
+coherente.
+
+#### Ventajas y desventajas
+
+| Aspecto | Detalle |
+|---|---|
+| Rango garantizado | Los valores siempre quedan en $[0,1]$; facilita la interpretación |
+| Preserva relaciones relativas | La transformación es estrictamente lineal |
+| Sensible a valores atípicos | Un solo extremo comprime todos los demás en un rango muy pequeño |
+| Dependiente del conjunto de entrenamiento | Nuevos datos fuera del rango original violan el intervalo $[0,1]$ |
+
+### Estandarización Z-score
+
+#### Fundamento teórico
+
+La estandarización Z-score transforma los datos de modo que el atributo resultante
+tenga **media igual a 0** y **desviación estándar igual a 1**. Al escalar con
+media cero y desviación estándar igual a uno, se consigue que todas las variables
+tengan igual peso en su participación al agrupar los datos. El valor
+resultante $z$ indica cuántas desviaciones estándar se aleja un dato de la media
+de su distribución:
+
+$$
+\boxed{z_i = \frac{x_i - \bar{x}}{\sigma}}
+$$
+
+donde $\bar{x} = \dfrac{1}{n}\sum x_i$ es la **media** del atributo y
+$\sigma = \sqrt{\dfrac{1}{n} \sum (x_i - \bar{x})^2}$ es la **desviación estándar poblacional**.
+
+#### Desarrollo paso a paso
+
+**Parámetros del atributo Salario:**
+
+$$
+\bar{x}_{\text{sal}} = \frac{15000 + 15500 + 15200}{3} \approx 15233.33
+\qquad
+\sigma_{\text{sal}} \approx 205.48
+$$
+
+**Parámetros del atributo Edad:**
+
+$$
+\bar{x}_{\text{edad}} = \frac{25 + 55 + 40}{3} = 40
+\qquad
+\sigma_{\text{edad}} \approx 12.25
+$$
+
+**Persona A** (15,000 ; 25):
+
+$$
+z_{\text{sal}, A} = \frac{15000 - 15233.33}{205.48} \approx -1.136
+\qquad
+z_{\text{edad}, A} = \frac{25 - 40}{12.25} \approx -1.225
+\quad \Rightarrow \quad \mathbf{A_z} = (-1.136,\ -1.225)
+$$
+
+**Persona B** (15,500 ; 55):
+
+$$
+z_{\text{sal}, B} = \frac{15500 - 15233.33}{205.48} \approx 1.298
+\qquad
+z_{\text{edad}, B} = \frac{55 - 40}{12.25} \approx 1.225
+\quad \Rightarrow \quad \mathbf{B_z} = (1.298,\ 1.225)
+$$
+
+**Persona C** (15,200 ; 40):
+$$
+z_{\text{sal}, C} = \frac{15200 - 15233.33}{205.48} \approx -0.162
+\qquad
+z_{\text{edad}, C} = \frac{40 - 40}{12.25} = 0.000
+\quad \Rightarrow \quad \mathbf{C_z} = (-0.162,\ 0.000)
+$$
+
+```{python}
+scaler_z = StandardScaler()
+X_z      = scaler_z.fit_transform(X)
+
+df_z = pd.DataFrame(X_z, columns=["Salario Z-score", "Edad Z-score"],
+                    index=personas)
+df_z.insert(0, "Salario Original", X[:, 0])
+df_z.insert(2, "Edad Original",    X[:, 1])
+df_z.round(3)
+```
+
+**Recalculo de distancias tras Z-score:**
+
+```{python}
+#| echo: false
+rows_z = []
+for _, _, i, j in pares:
+    d = euclidean(X_z[i], X_z[j])
+    rows_z.append({"Par":              f"{personas[i]} — {personas[j]}",
+                   "Distancia Z-score": f"{d:.4f}"})
+pd.DataFrame(rows_z).set_index("Par")
+```
+
+#### Ventajas y desventajas
+
+| Aspecto | Detalle |
+|---|---|
+| Robusto ante valores atípicos | La dispersión real ($\sigma$) evita que extremos colapsen el rango |
+| Recomendado para normalidad | Preferido en PCA, regresión y algoritmos que asumen distribución gaussiana |
+| Sin rango fijo | Los valores resultantes no están acotados; pueden superar $\pm 3$ |
+| Requiere conservar parámetros | Con nuevos datos deben usarse la $\bar{x}$ y $\sigma$ del entrenamiento |
+
+---
+
+## Impacto Práctico: Análisis Comparativo
+
+### Tabla comparativa de distancias
+
+```{python}
+filas = []
+for _, _, i, j in pares:
+    d_orig = euclidean(X[i],    X[j])
+    d_mm   = euclidean(X_mm[i], X_mm[j])
+    d_z    = euclidean(X_z[i],  X_z[j])
+    filas.append({
+        "Par":              f"{personas[i]} — {personas[j]}",
+        "Sin escalamiento": f"{d_orig:.1f}",
+        "Min-Max":          f"{d_mm:.4f}",
+        "Z-score":          f"{d_z:.4f}",
+    })
+
+rankings = ["3° (mas lejanos)", "1° (mas cercanos)", "2°"]
+for fila, r in zip(filas, rankings):
+    fila["Ranking"] = r
+
+pd.DataFrame(filas).set_index("Par")
+```
+
+### Visualización del espacio geométrico y la distorsión
+
+```{python}
+#| fig-cap: "Fila superior: transformación del espacio geométrico en los tres escenarios. Fila inferior: distancias escaladas entre pares y contribución porcentual por atributo sin escalamiento."
+#| label: fig-comparativo
+#| fig-height: 9
+#| code-fold: true
+#| code-summary: "Mostrar código de la figura"
+
+colores   = ["#E53935", "#1E88E5", "#43A047"]
+etiquetas = ["A — B", "A — C", "B — C"]
+x_pos     = np.arange(len(etiquetas))
+ancho     = 0.35
+
+mm_dist = [euclidean(X_mm[i], X_mm[j]) for _, _, i, j in pares]
+z_dist  = [euclidean(X_z[i],  X_z[j])  for _, _, i, j in pares]
+pct_sal  = contrib_sal  / total * 100
+pct_edad = contrib_edad / total * 100
+
+fig = plt.figure(figsize=(14, 9))
+gs  = fig.add_gridspec(2, 3, hspace=0.50, wspace=0.35)
+
+# ── Fila 1: Espacios geométricos ─────────────────────────────────────────────
+datasets = [X,    X_mm,    X_z]
+titulos  = [
+    "Datos originales\n(dominio del Salario)",
+    "Min-Max\n(espacio [0, 1])",
+    "Z-score\n(media = 0, \u03c3 = 1)",
+]
+ejes_x = ["Salario (MXN)", "Salario normalizado", "Salario (z)"]
+ejes_y = ["Edad (años)",   "Edad normalizada",    "Edad (z)"]
+
+for col, (Xd, tit, ex, ey) in enumerate(zip(datasets, titulos, ejes_x, ejes_y)):
+    ax = fig.add_subplot(gs[0, col])
+    for k, p in enumerate(personas):
+        ax.scatter(Xd[k, 0], Xd[k, 1], color=colores[k], s=110, zorder=3)
+        ax.annotate(p, (Xd[k, 0], Xd[k, 1]),
+                    textcoords="offset points", xytext=(8, 5), fontsize=11,
+                    color=colores[k], fontweight="bold")
+    ax.set_title(tit)
+    ax.set_xlabel(ex)
+    ax.set_ylabel(ey)
+    ax.grid(True, linestyle="--", alpha=0.5)
+
+# ── Fila 2 izquierda: distancias escaladas ───────────────────────────────────
+ax_bar = fig.add_subplot(gs[1, :2])
+b1 = ax_bar.bar(x_pos - ancho/2, mm_dist, ancho, label="Min-Max",
+                color="#1565C0", alpha=0.85)
+b2 = ax_bar.bar(x_pos + ancho/2, z_dist,  ancho, label="Z-score",
+                color="#E65100", alpha=0.85)
+ax_bar.set_xticks(x_pos)
+ax_bar.set_xticklabels(etiquetas)
+ax_bar.set_ylabel("Distancia euclídea")
+ax_bar.set_title("Distancias tras escalamiento (Min-Max vs. Z-score)")
+ax_bar.legend(frameon=False)
+ax_bar.bar_label(b1, fmt="%.4f", padding=3, fontsize=8)
+ax_bar.bar_label(b2, fmt="%.4f", padding=3, fontsize=8)
+ax_bar.set_ylim(0, max(z_dist) * 1.3)
+
+# ── Fila 2 derecha: contribución porcentual ──────────────────────────────────
+ax_pct = fig.add_subplot(gs[1, 2])
+bar_s  = ax_pct.bar(etiquetas, pct_sal,  label="Salario",
+                    color="#B71C1C", alpha=0.85)
+bar_e  = ax_pct.bar(etiquetas, pct_edad, bottom=pct_sal, label="Edad",
+                    color="#2E7D32", alpha=0.85)
+ax_pct.set_ylabel("Porcentaje (%)")
+ax_pct.set_title("Contribución por atributo\n(sin escalamiento)")
+ax_pct.yaxis.set_major_formatter(mticker.PercentFormatter())
+ax_pct.set_ylim(0, 115)
+ax_pct.legend(frameon=False, fontsize=8)
+for bar, pct in zip(bar_e, pct_edad):
+    ax_pct.text(bar.get_x() + bar.get_width()/2,
+                bar.get_y() + bar.get_height() + 1,
+                f"{pct:.1f} %", ha="center", va="bottom",
+                fontsize=8, color="#2E7D32")
+
+plt.suptitle(
+    "Escalamiento y Normalización: Transformación del Espacio Geométrico",
+    fontsize=13, fontweight="bold", y=1.01
+)
+plt.show()
+```
+
+### Interpretación
+
+La **fila superior** de la figura muestra cómo cambia el espacio geométrico en
+cada escenario:
+
+- **Original.** El eje del salario domina completamente. La distribución de los
+  puntos refleja casi exclusivamente las diferencias en ingresos; la edad es
+  invisible en la geometría del espacio.
+- **Tras Min-Max.** Ambos ejes quedan restringidos a $[0, 1]$. Los tres puntos
+  ahora ocupan simétricamente el espacio y cada atributo contribuye en la misma
+  proporción.
+- **Tras Z-score.** Los puntos quedan centrados en el origen. La distancia entre
+  ellos refleja la variabilidad estadística relativa de cada atributo, no su
+  magnitud absoluta.
+
+La **fila inferior** confirma numéricamente lo anterior: sin escalamiento, el
+salario acapara más del **99 %** de la distancia en todos los pares, convirtiendo
+a la edad en ruido. Tras cualquier escalamiento, el orden relativo de cercanía se
+preserva (A — C es el par más cercano), pero ahora ambos atributos influyen de
+forma genuina en la geometría del espacio.
+
+---
+
+## Resumen Comparativo: Min-Max vs. Z-score
+
+| Criterio | Min-Max | Z-score |
+|---|:---:|:---:|
+| Datos sin valores atípicos | Ideal | Funciona |
+| Datos con valores atípicos | Se distorsiona | Mas robusto |
+| Se requiere rango $[0, 1]$ | Garantizado | No aplica |
+| Algoritmos que asumen normalidad (PCA, SVM) | Aceptable | Preferido |
+| Redes neuronales / deep learning | Muy usado | Valido |
+| Llegada frecuente de nuevos datos | Puede violar el rango | Mas estable |
+
+> **Regla fundamental.** Al aplicar técnicas de clustering basadas en distancia
+> (como K-Means o PAM) es obligatorio escalar los datos previamente para evitar
+> que variables con magnitudes numéricas grandes dominen el proceso de agrupamiento.
+
+---
+
+## Preguntas de Reflexión
+
+1. Si el 99 % de los clientes tiene salarios entre \$10,000 y \$20,000, pero
+   existe un directivo con \$500,000, ¿qué técnica de escalamiento es más
+   apropiada y por qué? ¿Cómo afectaría ese valor extremo a la normalización
+   Min-Max?
+
+2. ¿Es siempre correcto escalar los datos antes de aplicar clustering? ¿Podría
+   existir algún escenario donde escalar los datos sea contraproducente o elimine
+   información valiosa?
+
+3. Supongamos que ajustamos nuestro escalador Min-Max con los datos de entrenamiento actuales, donde el salario máximo registrado es de \$20,000, y el modelo sale a producción. Al mes siguiente, el sistema procesa a un nuevo cliente que gana \$25,000. Si le aplicamos exactamente la misma fórmula Min-Max con los parámetros guardados, ¿qué valor matemático obtendrá este nuevo registro? ¿Qué implicaciones algorítmicas tiene esto y cómo se comporta el Z-score ante el mismo escenario?
+
+---
