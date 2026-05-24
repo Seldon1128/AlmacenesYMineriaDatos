@@ -24,7 +24,7 @@ def distancia_euclideana(a, b):
 obj_a = (1, 2)
 obj_b = (4, 6)
 distancia_2d = distancia_euclideana(obj_a, obj_b)
-print(f"La distancia Euclideana 2D entre {obj_a} y {obj_b} es de {distancia_2d:.2f}")
+print(f"La distancia euclideana entre {obj_a} y {obj_b} es de {distancia_2d:.2f}")
 ```
 
 O bien, es posible utilizar la versión ya implementada y optimizada de SciPy.
@@ -34,7 +34,7 @@ O bien, es posible utilizar la versión ya implementada y optimizada de SciPy.
 from scipy.spatial.distance import euclidean
 
 distancia_scipy = euclidean(obj_a, obj_b)
-print(f"La distancia Euclideana 2D entre {obj_a} y {obj_b} es de {distancia_scipy:.2f}")
+print(f"La distancia euclideana entre {obj_a} y {obj_b} es de {distancia_scipy:.2f}")
 ```
 
 ### Limitaciones
@@ -199,7 +199,24 @@ plt.show()
 ```
 ### Limitaciones
 
-La distancia Manhattan también tiene limitaciones como sensibilidad a la escala y a la presencia de outliers, pero debido a la ausencia de la potencia al cuadrado que utiliza la distancia euclidiana, el impacto es menor en comparación. La principal diferencia entre ambas distancias es que Manhattan es más restrictiva al no permitir diagonales por lo que en espacios donde no se tiene esa restricción podría ser mejor la distancia euclidiana.
+La distancia Manhattan también tiene limitaciones como la sensibilidad a la escala y a la presencia de outliers, pero debido a que no eleva al cuadrado la diferencia de los atributos es significativamente más resistente. Hay que tener en cuenta que esto no quiere decir que los valores obtenidos sean menores, pues como se mencionó con anterioridad, la distancia euclideana es la menor. 
+
+Veamos un ejemplo.
+
+```{python}
+#| code-fold: false
+a = (1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+b = (1, 1, 1, 1, 1, 1, 1, 1, 1, 21)
+c = (2, 2, 2, 2, 2, 2, 2, 2, 2, 2)
+
+print(f"Distancia Manhattan casa A y B {distancia_manhattan(a, b)}")
+print(f"Distancia Manhattan casa A y C {distancia_manhattan(a, c)}")
+
+print(f"Distancia Euclideana casa A y B {distancia_euclideana(a, b)}")
+print(f"Distancia Euclideana casa A y C {distancia_euclideana(a, c)}")
+```
+
+Notemos que con los valores de B y C originales, podemos ver que ambos son bastante similares. Sin embargo, tomando en cuenta solo las distancias obtenidas, tenemos una distancia en Manhattan de 10 puntos, mientras que en la Euclideana una distancia de casi 17 puntos. Esto refleja que la diferencia (outlier) en el último atributo tiene mucho más peso en esta segunda distancia.
 
 ## Distancia de Hamming
 
@@ -234,9 +251,7 @@ print(f"Hamming SciPy: {hamming(x, y):.2f}")
 
 ### Limitaciones
 
-Algunas limitaciones importantes de este tipo de distancia que hay que tomar en cuenta al momento de elegir son las siguientes.
-
-#### Diseñado para variables categóricas
+Algunas limitaciones importantes de este tipo de distancia, que hay que tomar en cuenta al momento de elegir, son por un lado su diseño orientado a la comparación de atributos categóricos y por el otro la dependencia a que ambos objetos tengan la misma cantidad de atributos.
 
 ## Distancia de Gower
 
@@ -269,4 +284,18 @@ def distancia_gower(a, b, tipos, rangos):
 ```
 
 Por su naturaleza para el manejo de datos mixtos, para su cálculo es necesario saber el tipo de variable al que corresponde cada atributo y el rango de aquellas que son numéricas, por lo que además de los dos objetos a evaluar, es necesaria una lista en la que se especifica por cada catributo, si es categórico o numérico y otra lista con los rangos de cada atributo (0 si es categórica).
+
+```{python}
+#| code-fold: false
+# Dos mascotas: [peso_kg, especie]
+mascota_a = [4.0, "gato"]
+mascota_b = [6.0, "gato"]
+mascota_c = [5.0, "perro"]
+
+tipos  = ['c', 'cat']
+rangos = [2.0, 0]
+
+print(f"Distancia de Gower entre la mascota A y B: {distancia_gower(mascota_a, mascota_b, tipos, rangos):.3f}")
+print(f"Distancia de Gower entre la mascota A y C: {distancia_gower(mascota_a, mascota_c, tipos, rangos):.3f}")
+```
 
