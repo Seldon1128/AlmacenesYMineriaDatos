@@ -2,7 +2,7 @@
 
 ## Distancia Euclideana
 
-Sean $a$ y $b$ dos objetos con $p$ atributos numéricos, su distancia euclidiana se calcula mediante la fórmula:
+Sean $a$ y $b$ dos objetos con $p$ atributos numéricos, su distancia euclidiana se calcula mediante la fórmula [@mineria_con_r]:
 
 $$d(a,b) = \sqrt{(x_{a1} - x_{b1})^2 + (x_{a2} - x_{b2})^2 + \cdots + (x_{ap} - x_{bp})^2}$$
 
@@ -39,7 +39,7 @@ print(f"La distancia euclideana entre {obj_a} y {obj_b} es de {distancia_scipy:.
 
 ### Limitaciones
 
-Si bien la distancia euclideana es muy útil gracias a que es fácil de entender y nos garantiza el camino más corto, tiene algunas limitaciones importantes, como lo son las siguientes.
+Si bien la distancia euclideana es muy útil gracias a que es fácil de entender y nos garantiza el camino más corto, tiene algunas limitaciones importantes, como lo son las siguientes [@euclidiana].
 
 #### Sensibilidad a la escala {.unnumbered}
 
@@ -129,7 +129,7 @@ En ellos, vemos que la diferencia de la casa A a la casa C parece abismal en com
 
 ## Distancia Manhattan
 
-Sean $a$ y $b$ dos objetos con $p$ atributos numéricos, su distancia Manhattan se calcula mediante la fórmula:
+Sean $a$ y $b$ dos objetos con $p$ atributos numéricos, su distancia Manhattan se calcula mediante la fórmula [@mineria_con_r]:
 
 $$d(a,b) = |x_{a1} - x_{b1}| + |x_{a2} - x_{b2}| + \cdots + |x_{ap} - x_{bp}|$$
 
@@ -199,7 +199,7 @@ plt.show()
 ```
 ### Limitaciones
 
-La distancia Manhattan también tiene limitaciones como la sensibilidad a la escala y a la presencia de outliers, pero debido a que no eleva al cuadrado la diferencia de los atributos es significativamente más resistente. Hay que tener en cuenta que esto no quiere decir que los valores obtenidos sean menores, pues como se mencionó con anterioridad, la distancia euclideana es la menor. 
+La distancia Manhattan también tiene limitaciones como la sensibilidad a la escala y a la presencia de outliers, pero debido a que no eleva al cuadrado la diferencia de los atributos es significativamente más resistente [@manhattan]. Hay que tener en cuenta que esto no quiere decir que los valores obtenidos sean menores, pues como se mencionó con anterioridad, la distancia euclideana es la menor. 
 
 Veamos un ejemplo.
 
@@ -220,7 +220,7 @@ Notemos que con los valores de B y C originales, podemos ver que ambos son basta
 
 ## Distancia de Hamming
 
-Sean $a$ y $b$ dos objetos con $p$ atributos categóricos, su distancia de Hamming se calcula mediante la fórmula:
+Sean $a$ y $b$ dos objetos con $p$ atributos categóricos, su distancia de Hamming se calcula mediante la fórmula  [@mineria_con_r]:
 
 $$d(a,b) = (x_{a1} \neq x_{b1}) + (x_{a2} \neq x_{b2}) + \cdots + (x_{ap} \neq x_{bp})$$
 
@@ -235,7 +235,7 @@ def distancia_hamming(a, b):
     return np.sum(np.array(a) != np.array(b))
 ```
 
-O bien se puede usar la versión de SciPy pero hay que tomar en cuenta que esta añade una división al final entre el número de atributos del objeto para normalizar el resultado.
+O bien se puede usar la versión de SciPy pero hay que tomar en cuenta que esta añade una división al final entre el número de atributos del objeto para normalizar el resultado [@hamming].
 
 ```{python}
 #| code-fold: false
@@ -251,11 +251,11 @@ print(f"Hamming SciPy: {hamming(x, y):.2f}")
 
 ### Limitaciones
 
-Algunas limitaciones importantes de este tipo de distancia, que hay que tomar en cuenta al momento de elegir, son por un lado su diseño orientado a la comparación de atributos categóricos y por el otro la dependencia a que ambos objetos tengan la misma cantidad de atributos.
+Algunas limitaciones importantes de este tipo de distancia, que hay que tomar en cuenta al momento de elegir, son por un lado su diseño orientado a la comparación de atributos categóricos y por el otro la dependencia a que ambos objetos tengan la misma cantidad de atributos [@hamming].
 
 ## Distancia de Gower
 
-Sean $a$ y $b$ dos objetos con $p$ atributos mixtos, su distancia de Gower se calcula mediante la fórmula:
+Sean $a$ y $b$ dos objetos con $p$ atributos mixtos, su distancia de Gower se calcula mediante la fórmula  [@mineria_con_r]:
 
 $$d(a,b) = \sum_{i=1}^p \delta (x_{ai}, x_{bi})$$
 
