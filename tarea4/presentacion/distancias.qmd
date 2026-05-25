@@ -85,11 +85,11 @@ print(f"Distancia entre cliente A y cliente C: {distancia_euclideana(a_s, c_s):.
 
 Ahora los resultados han cambiado pues vemos que el cliente más cercano al cliente A es en reaidad el cliente B.
 
-Pero, ¿cómo sabemos que el segundo resultado es el que esperamos?. Bueno, al **no escalar** lo que tenemos es un rango en las edades de $55 - 25 = 30$ mientras que en los ingresos se tiene un rango de $8,2000 - 8,000 = 74,000$ por lo que al obtener la diferencia entre los atributos de los clientes, el valor a obtener puede ser mucho mayor para el ingreso mensual que para la edad y al elevar al cuadrado dicha diferencia se vuleve más evidente que **la diferencia de ingreso pesa mucho más que una diferencia en la edad**. Por otro lado, al aplicar **Z-score** lo que hacemos es **restar la media para obtener cuánto se aleja del valor promedio** y al **dividir se obtiene cuántas desviaciones estándar representa** esa distancia del valor promedio. De forma que ambas variables se miden en desviaciones estándar, y **la diferencia de ingreso pesa exactamente lo mismo que una diferencia en la edad**.
+Pero, ¿cómo sabemos que el segundo resultado es el que esperamos?. Bueno, al **no escalar** lo que tenemos es un rango en las edades de $55 - 25 = 30$ mientras que en los ingresos se tiene un rango de $8,2000 - 8,000 = 74,000$ por lo que al obtener la diferencia entre los atributos de los clientes, el valor a obtener puede ser mucho mayor para el ingreso mensual que para la edad y al elevarlo al cuadrado, se vuleve más evidente que **la diferencia de ingreso pesa mucho más que una diferencia en la edad**. Por otro lado, al aplicar **Z-score** lo que hacemos es **restar la media para obtener cuánto se aleja del valor promedio** y al **dividir se obtiene cuántas desviaciones estándar representa** esa distancia del valor promedio. De forma que ambas variables se miden en desviaciones estándar, y **la diferencia de ingreso pesa exactamente lo mismo que una diferencia en la edad**.
 
 #### Sensibilidad a valores atípicos {.unnumbered}
 
-Para esta segunda limitación, supongamos que tenemos un conjunto de datos en el que se registran las características de 3 casas.
+Para esta segunda limitación, supongamos que tenemos un conjunto de datos en el que se registran las características de 4 casas.
 
 ```{python}
 #| code-fold: false
@@ -97,19 +97,26 @@ Para esta segunda limitación, supongamos que tenemos un conjunto de datos en el
 casa_a = (80, 3, 10, 1_200_000)
 casa_b = (82, 3, 11, 1_250_000)
 casa_c = (81, 3, 10, 15_000_000)
+casa_d = (200, 10, 5, 1_200_000)
 ```
 
-En las tres el número de metros cuadrados es bastante similar pues el rango es de 2 $m^2$, el número de habitaciones es el mismo y el rango de la antigüedad es de tan solo 1 año. Además, el precio de las casas A y B es muy similar, pero la casa C tiene un diferencia de al menos $13,750,000 con respecto a las otras.
+En las tres primeras el número de metros cuadrados es bastante similar pues el rango es de 2 $m^2$, el número de habitaciones es el mismo y el rango de la antigüedad es de tan solo 1 año. Además, el precio de las casas A y B es muy similar, pero la casa C tiene un diferencia de al menos $13,750,000 con respecto a las otras. 
+
+Por otro lado, la última casa es distinta en metros cuadrados, habitaciones y antigüedad pero igual en precio que A.
 
 Al calcular su distancia euclidiana obtenemos los siguientes resultados.
 
 ```{python}
 print(f"Distancia entre A y B:  {distancia_euclideana(casa_a, casa_b):>12.1f}")
 print(f"Distancia entre A y C:  {distancia_euclideana(casa_a, casa_c):>12.1f}")
+print(f"Distancia entre A y D:  {distancia_euclideana(casa_a, casa_d):>12.1f}")
 ```
+En ellos, vemos que la diferencia de la casa A a la casa C es abismal en comparación con las casas B y D, lo que es cierto si solo nos fijamos en el precio, pero **poco informativo si queremos tomar en cuenta que en el resto de los atributos las casas A, B y C son muy similares pero con D no lo son**.
+
+Al normalizar los datos, los resultados cambian y vemos mejor esta relación.
 
 ```{python}
-datos = np.array([casa_a, casa_b, casa_c], dtype=float)
+datos = np.array([casa_a, casa_b, casa_c, casa_d], dtype=float)
 
 media = datos.mean(axis=0)
 std = datos.std(axis=0)
@@ -117,15 +124,13 @@ std_seguro = np.where(std == 0, 1, std)
 
 datos_escalados = (datos - media) / std_seguro
 
-a_s, b_s, c_s = datos_escalados
+a_s, b_s, c_s, d_s = datos_escalados
 
 print("--- Con Z-Score ---")
 print(f"Distancia entre A y B: {distancia_euclideana(a_s, b_s):.3f}")
 print(f"Distancia entre A y C: {distancia_euclideana(a_s, c_s):.3f}")
+print(f"Distancia entre A y D: {distancia_euclideana(a_s, d_s):.3f}")
 ```
-
-En ellos, vemos que la diferencia de la casa A a la casa C parece abismal en comparación con la casa B, lo que es cierto si solo nos fijamos en el precio, pero **poco informativo si queremos tomar en cuenta que en el resto de los atributos las casas son muy similares**.
-
 
 ## Distancia Manhattan
 
@@ -209,11 +214,11 @@ a = (1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
 b = (1, 1, 1, 1, 1, 1, 1, 1, 1, 21)
 c = (2, 2, 2, 2, 2, 2, 2, 2, 2, 2)
 
-print(f"Distancia Manhattan casa A y B {distancia_manhattan(a, b)}")
-print(f"Distancia Manhattan casa A y C {distancia_manhattan(a, c)}")
+print(f"Distancia Manhattan casa A y B: {distancia_manhattan(a, b)}")
+print(f"Distancia Manhattan casa A y C: {distancia_manhattan(a, c)}")
 
-print(f"Distancia Euclideana casa A y B {distancia_euclideana(a, b)}")
-print(f"Distancia Euclideana casa A y C {distancia_euclideana(a, c)}")
+print(f"Distancia Euclideana casa A y B: {distancia_euclideana(a, b)}")
+print(f"Distancia Euclideana casa A y C: {distancia_euclideana(a, c)}")
 ```
 
 Notemos que con los valores de B y C originales, podemos ver que ambos son bastante similares. Sin embargo, tomando en cuenta solo las distancias obtenidas, tenemos una distancia en Manhattan de 10 puntos, mientras que en la Euclideana una distancia de casi 17 puntos. Esto refleja que la diferencia (outlier) en el último atributo tiene mucho más peso en esta segunda distancia.
