@@ -280,7 +280,7 @@ distancia que se verán en las siguientes secciones.
 
 ---
 
-# Preguntas de Reflexión
+## Preguntas de Reflexión
 
 1. ¿Por qué es importante que una medida de disimilitud cumpla las propiedades de una métrica? ¿Qué problemas podrían surgir si usamos una medida que no es una métrica?
 

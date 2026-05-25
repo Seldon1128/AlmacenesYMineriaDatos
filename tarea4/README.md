@@ -1,5 +1,9 @@
 # Tarea 4 - Fundamentos de Proximidad
-La tarea 4 de la materia de **Almacenes y Minería de Datos** tiene como objetivo abordar algoritmos de agrupamiento de manera grupal. Para ello a cada equipo le fue asignado un tema a exponer. En este caso el documento aborda los conceptos base para comenzar a explorar los distintos algoritmos, la similitud y disimilitud de los datos.
+La presente actividad de la materia Almacenes y Minería de Datos tiene como objetivo desarrollar y exponer los Fundamentos de Proximidad, abordando conceptos teóricos y matemáticos relacionados con:
+
+- Similitud y disimilitud
+- Medidas de distancia (Euclídea, Manhattan, Coseno)
+- Escalamiento y normalización de datos
 
 ## Equipo 2:
 * **Escobar Gonzalez Isaac Giovani** - 321336400
