@@ -292,7 +292,7 @@ mascota_a = [4.0, "gato"]
 mascota_b = [6.0, "gato"]
 mascota_c = [5.0, "perro"]
 
-tipos  = ['c', 'cat']
+tipos  = ['n', 'c']
 rangos = [2.0, 0]
 
 print(f"Distancia de Gower entre la mascota A y B: {distancia_gower(mascota_a, mascota_b, tipos, rangos):.3f}")
