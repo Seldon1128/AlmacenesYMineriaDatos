@@ -1,0 +1,281 @@
+# Fundamentos teóricos de proximidad
+
+## Introducción
+
+En el análisis de datos, con frecuencia necesitamos agrupar o clasificar objetos basándonos en sus características. Entonces, necesitamos medidas cuantitativas que nos indiquen qué tan relacionados están dos puntos en nuestro espacio de datos.  
+Pero antes de agrupar, clasificar o detectar anomalías en datos, cualquier algoritmo de minería necesita responder una pregunta elemental:
+
+> **¿Qué tan parecidos o diferentes son dos objetos de datos?**
+
+Esto nos lleva al concepto de **proximidad**, entenderlo es esencial para que podamos comprender mejor algunas técnicas como el *clustering*.
+
+# Conceptos fundamentales de proximidad
+
+## La proximidad
+En minería de datos, la **proximidad** es una medida que cuantifica qué tan similares o diferentes son dos objetos de datos. Es por esto que la *proximidad* agrupa dos conceptos complementarios:
+
+$$
+\text{Proximidad} 
+\begin{cases}
+\textbf{Similitud} & \text{qué tan parecidos son dos objetos} \\
+\textbf{Disimilitud} & \text{qué tan diferentes son dos objetos}
+\end{cases}
+$$
+
+Así para entender mejor este concepto, es necesario entender ambos términos, además la elección entre usar similitud o disimilitud depende del algoritmo y del contexto, pero ambas pueden transformarse una en la otra.
+
+## Similitud
+La **similitud** entre dos objetos $x$ e $y$ es una medida numérica que indica el grado en que ambos objetos se parecen. Se denota $s(x, y)$.  
+
+### Propiedades características
+
+$$
+\begin{aligned}
+&1.\quad s(x, y) \in [0,\, 1] \quad \text{(no negativa y acotada)} \\
+&2.\quad s(x, y) = 1 \iff x = y \quad \text{(máxima similitud solo con objetos idénticos)} \\
+&3.\quad s(x, y) = s(y, x) \quad \text{(simetría)}
+\end{aligned}
+$$
+
+Donde $s = 0$ indica **ninguna similitud** y $s = 1$ indica **similitud
+completa**.
+
+::: {.callout-tip title="Nota para entender mejor"}
+En el contexto de reconocimiento facial, la similitud se utiliza para comparar dos imágenes de rostros y determinar qué tan parecidos son. Por ejemplo, si tenemos dos imágenes de la misma persona, 
+la similitud entre ellas debería ser alta (cercana a 1). Por otro lado, si las imágenes son de personas diferentes, la similitud debería ser baja (cercana a 0).
+:::
+
+---
+
+## Disimilitud
+La **disimilitud** entre dos objetos $x$ e $y$ es una medida numérica del grado en que ambos objetos difieren. Se denota $d(x, y)$.
+
+### Propiedades características
+A la inversa de la similitud, las disimilitudes arrojan valores más bajos para pares de objetos que son más similares.
+
+$$
+\begin{aligned}
+&1.\quad d(x, y) \geq 0 \quad \text{(no negativa)} \\
+&2.\quad d(x, y) = 0 \iff x = y \quad \text{(cero solo para objetos idénticos)} \\
+&3.\quad d(x, y) = d(y, x) \quad \text{(simetría)}
+\end{aligned}
+$$
+
+El rango de la disimilitud puede ser $[0, 1]$ o $[0, \infty)$ dependiendo de la medida utilizada.
+
+::: {.callout-tip title="Nota para entender mejor"}
+En el contexto de reconocimiento facial, la disimilitud se utiliza para comparar dos imágenes de rostros y determinar qué tan diferentes son. Por ejemplo, si tenemos dos imágenes de la misma persona,
+la disimilitud entre ellas debería ser baja (cercana a 0). Por otro lado, si las imágenes son de personas diferentes, la disimilitud debería ser alta (cercana a 1 o incluso mayor dependiendo de la medida utilizada).
+:::
+
+::: {.callout-important title="Terminología"}
+Algunas veces nos encontramos con que **distancia** se usa como sinónimo de disimilitud. Sin embargo, técnicamente la distancia es un tipo especial de
+disimilitud que cumple propiedades adicionales. Lo que nos lleva a que no son lo mismo.
+:::
+
+---
+
+## Transformación entre similitud y disimilitud
+Dado que la similitud y la disimilitud son conceptos complementarios, es posible transformar una medida de similitud en una medida de disimilitud y viceversa. 
+Esto es útil porque algunos algoritmos requieren una medida de similitud, mientras que otros requieren una medida de disimilitud.
+Si ambas están normalizadas en $[0, 1]$, la transformación más directa es:
+
+$$
+\boxed{d(x, y) = 1 - s(x, y)}
+\qquad \Longleftrightarrow \qquad
+\boxed{s(x, y) = 1 - d(x, y)}
+$$
+
+Existen otras transformaciones cuando los rangos no son $[0, 1]$. Por ejemplo,
+para convertir una disimilitud con rango $[0, \infty)$ a similitud en $[0, 1]$:
+
+$$
+s(x,y) = \frac{1}{1 + d(x,y)}
+\qquad \text{o} \qquad
+s(x,y) = e^{-d(x,y)}
+$$
+
+Este concepto es muy importante porque sin una medida matemática de proximidad, una computadora sería incapaz de encontrar patrones o relaciones entre los datos.
+
+---
+
+# Métricas: La Formalización Matemática de la Distancia
+Como ya vimos en la sección anterior, frecuentemente se suele usar la palabra **distancia** como sinónimo de disimilitud. Sin embargo, en el análisis de datos, 
+para que una medida de disimilitud sea considerada como una métrica, debe satisfacer tres propiedades matemáticas bien definidas.
+Pero primero veamos la definición formal de una métrica.
+
+## ¿Qué es una métrica?
+
+Una **métrica** es una función de disimilitud
+$d: X \times X \to \mathbb{R}$ que satisface **tres propiedades fundamentales**.
+
+---
+
+## Las Tres Propiedades de una Métrica
+
+Sea $d(x, y)$ la distancia entre dos objetos $x$ e $y$ en un conjunto $X$, las propiedades que se deben cumplir son las siguientes.
+
+### Propiedad 1: Positividad
+Esta propiedad se divide en dos partes:  
+
+1. **No negatividad**:
+$$
+\boxed{d(x, y) \geq 0 \quad \forall\, x, y \in X}
+$$
+Las distancias nunca pueden ser negativas. Una distancia negativa no tiene interpretación física ni matemática coherente.
+
+2. **Identidad del indiscernible**:
+$$
+\boxed{d(x, y) = 0 \iff x = y}
+$$
+La distancia entre un objeto y sí mismo es cero, **únicamente** entre un
+objeto y sí mismo.
+
+### Propiedad 2: Simetría
+$$
+\boxed{d(x, y) = d(y, x) \quad \forall\, x, y \in X}
+$$
+La distancia de $x$ a $y$ es exactamente igual que la distancia de $y$ a $x$.
+
+### Propiedad 3: Desigualdad triangular
+$$
+\boxed{d(x, z) \leq d(x, y) + d(y, z) \quad \forall\, x, y, z \in X}
+$$
+
+La distancia directa entre dos puntos siempre será menor o igual a la 
+distancia calculada si pasamos por un tercer punto intermedio. El siguiente diagrama
+ilustra esta propiedad geométricamente:
+
+```{mermaid}
+%%| fig-cap: "Desigualdad triangular: el camino directo de x a z nunca puede ser mayor que pasar por y."
+%%| fig-align: center
+graph LR
+    X((x)) -->|"d(x,y)"| Y((y))
+    Y((y)) -->|"d(y,z)"| Z((z))
+    X((x)) -->|"d(x,z) ≤ d(x,y) + d(y,z)"| Z((z))
+
+    style X fill:#4e79a7,color:#fff,stroke:#2c5282
+    style Y fill:#f28e2b,color:#fff,stroke:#9c5700
+    style Z fill:#59a14f,color:#fff,stroke:#276221
+```
+
+::: {.callout-caution title="Pseudométricas"}
+Existen medidas de disimilitud que no cumplen todas las propiedades de una métrica, estas se conocen como **pseudométricas**. 
+Por ejemplo, algunas medidas cumplen $d(x,x) = 0$ pero **no** la dirección inversa:
+puede ocurrir que $d(x,y) = 0$ con $x \neq y$.  
+:::
+
+::: {.callout-caution title="Asimetría"}
+Si una medida de disimilitud no cumple la propiedad de simetría, se dice que es **asimétrica**.  
+Un ejemplo de asimetría útil es: La distancia-tiempo entre dos horarios del día: si un evento ocurre a 
+la 1 PM cada día y ahora son las 2 PM, esperas 1 hora; pero si estás a la 1 PM, el próximo evento hace 
+23 horas que ocurrió.  
+Esta medida es útil, pero no es simétrica y por tanto no es una métrica.
+:::
+
+---
+
+## ¿Por qué importan?
+Importan porque muchas técnicas de análisis de datos, como el clustering, la clasificación o la detección de anomalías, se basan en la idea de proximidad entre objetos.
+Si la medida de disimilitud que usamos no es una métrica, podríamos obtener resultados inconsistentes o difíciles de interpretar.  
+En cambio, si usamos una métrica, podemos confiar en que las distancias reflejan relaciones coherentes entre los objetos, lo que facilita la interpretación y el análisis de los datos.
+Cada propiedad de una métrica nos garantiza algo en concreto:
+
+| Propiedad | Fórmula | ¿Qué garantiza? |
+|-----------|---------|-----------------|
+| No negatividad | $d(x,y) \geq 0$ | Distancias siempre positivas |
+| Identidad | $d(x,y) = 0 \iff x = y$ | Solo objetos idénticos tienen distancia cero |
+| Simetría | $d(x,y) = d(y,x)$ | La distancia no depende del sentido |
+| Desig. triangular | $d(x,z) \leq d(x,y)+d(y,z)$ | Consistencia geométrica del espacio |
+
+---
+
+## Medidas que No Son Métricas
+
+No toda medida de disimilitud o similitud útil en minería de datos es una métrica. 
+Como por ejemplo:
+
+### Diferencia de conjuntos (asimétrica)
+
+Dados dos conjuntos $A$ y $B$, definir $d(A, B) = |A - B|$ (cardinalidad de
+la diferencia) **no** es una métrica porque:
+
+- No es simétrica: $|A - B| \neq |B - A|$ en general.
+
+La versión simétrica $d(A, B) = |A - B| + |B - A|$ sí es una métrica.
+
+### Similitud del coseno (no es distancia directamente)
+
+La similitud coseno $s_{\cos}(x,y) \in [-1, 1]$ tampoco satisface directamente
+las propiedades métricas, porque por ejemplo, no cumple la propiedad de la no negatividad ya 
+que puede tomar valores negativos, aunque su transformación $d = 1 - s_{\cos}$ sí puede
+convertirse en una métrica bajo ciertas condiciones.
+
+---
+
+# Similitud por Tipo de Atributo
+
+La forma de calcular la similitud o disimilitud entre dos objetos depende del
+**tipo de atributo** que los describe.
+
+## Clasificación de atributos 
+
+| Tipo | Ejemplo | Operaciones válidas |
+|------|---------|---------------------|
+| **Nominal** | color, género, país | $=, \neq$ |
+| **Ordinal** | {malo, regular, bueno} | $=, \neq, <, >$ |
+| **Intervalo** | temperatura en °C | $=, \neq, <, >, +, -$ |
+| **Razón** | peso, altura, precio | $=, \neq, <, >, +, -, \times, /$ |
+
+## Tabla de proximidad por tipo de atributo
+
+| Tipo | Disimilitud $d(x, y)$ | Similitud $s(x, y)$ |
+|------|-----------------------|----------------------|
+| Nominal | $d = \begin{cases} 0 & x = y \\ 1 & x \neq y \end{cases}$ | $s = \begin{cases} 1 & x = y \\ 0 & x \neq y \end{cases}$ |
+| Ordinal | $d = \dfrac{\|x - y\|}{n-1}$ | $s = 1 - d$ |
+| Intervalo/Razón | $d = \|x - y\|$ | $s=-d$, $s = \dfrac{1}{1+d}$ o $e^{-d}$ |
+
+Para atributos **ordinales**, los valores se mapean primero a enteros $\{0, 1, \ldots, n-1\}$
+para capturar el orden.
+
+---
+
+# Caso de Aplicación
+
+## Contexto: Segmentación de Clientes Bancarios
+
+Una institución bancaria quiere agrupar a sus clientes para diseñar paquetes
+de productos personalizados. Cada cliente se describe con los atributos:
+
+| Atributo | Tipo | Ejemplo |
+|----------|------|---------|
+| Edad | Razón | 34 años |
+| Ingreso mensual | Razón | $15,000 MXN |
+| Categoría de cuenta | Nominal | "Premier", "Básica" |
+| Nivel de riesgo | Ordinal | {bajo, medio, alto} |
+
+### Paso 1: Identificar el tipo de cada atributo
+
+Primero hay que conocer el tipo de cada atributo para elegir la medida de proximidad correcta.
+
+### Paso 2: Calcular similitud por atributo
+
+Para dos clientes $a$ y $b$:
+
+**Edad**: Si $\text{edad}_a = 34$, $\text{edad}_b = 38$:
+$$d_{\text{edad}} = |34 - 38| = 4$$
+
+**Categoría de cuenta**: Si $a$ tiene "Premier" y $b$ tiene "Básica":
+$$d_{\text{cuenta}} = 1 \quad (x \neq y)$$
+
+**Nivel de riesgo** ($n=3$ valores: $\{0,1,2\}$): Si $a$ es "bajo" (0)
+y $b$ es "alto" (2):
+$$d_{\text{riesgo}} = \frac{|0 - 2|}{3 - 1} = \frac{2}{2} = 1$$
+
+### Paso 3: Combinar
+
+La similitud global se calcula como el promedio de similitudes individuales
+(normalizadas a $[0,1]$). Es aquí donde se aplican las métricas de
+distancia que se verán en las siguientes secciones.
+
+---

@@ -18,6 +18,9 @@ book:
 
 bibliography: references.bib
 
+nocite: |
+  @*
+
 format:
   html:
     code-fold: true

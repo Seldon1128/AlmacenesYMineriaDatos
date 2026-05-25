@@ -2,7 +2,7 @@
 
 ## Distancia Euclideana
 
-Sean $a$ y $b$ dos objetos con $p$ atributos numéricos, su distancia euclidiana se calcula mediante la fórmula [@mineria_con_r]:
+Sean $a$ y $b$ dos objetos con $p$ atributos numéricos, su distancia euclidiana se calcula mediante la fórmula [@lopez2021mineria]:
 
 $$d(a,b) = \sqrt{(x_{a1} - x_{b1})^2 + (x_{a2} - x_{b2})^2 + \cdots + (x_{ap} - x_{bp})^2}$$
 
@@ -129,7 +129,7 @@ En ellos, vemos que la diferencia de la casa A a la casa C parece abismal en com
 
 ## Distancia Manhattan
 
-Sean $a$ y $b$ dos objetos con $p$ atributos numéricos, su distancia Manhattan se calcula mediante la fórmula [@mineria_con_r]:
+Sean $a$ y $b$ dos objetos con $p$ atributos numéricos, su distancia Manhattan se calcula mediante la fórmula [@lopez2021mineria]:
 
 $$d(a,b) = |x_{a1} - x_{b1}| + |x_{a2} - x_{b2}| + \cdots + |x_{ap} - x_{bp}|$$
 
@@ -220,7 +220,7 @@ Notemos que con los valores de B y C originales, podemos ver que ambos son basta
 
 ## Distancia de Hamming
 
-Sean $a$ y $b$ dos objetos con $p$ atributos categóricos, su distancia de Hamming se calcula mediante la fórmula  [@mineria_con_r]:
+Sean $a$ y $b$ dos objetos con $p$ atributos categóricos, su distancia de Hamming se calcula mediante la fórmula  [@lopez2021mineria]:
 
 $$d(a,b) = (x_{a1} \neq x_{b1}) + (x_{a2} \neq x_{b2}) + \cdots + (x_{ap} \neq x_{bp})$$
 
@@ -255,7 +255,7 @@ Algunas limitaciones importantes de este tipo de distancia, que hay que tomar en
 
 ## Distancia de Gower
 
-Sean $a$ y $b$ dos objetos con $p$ atributos mixtos, su distancia de Gower se calcula mediante la fórmula  [@mineria_con_r]:
+Sean $a$ y $b$ dos objetos con $p$ atributos mixtos, su distancia de Gower se calcula mediante la fórmula  [@lopez2021mineria]:
 
 $$d(a,b) = \sum_{i=1}^p \delta (x_{ai}, x_{bi})$$
 
