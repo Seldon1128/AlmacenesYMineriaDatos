@@ -3,10 +3,11 @@ project:
 
 book:
   title: "Fundamentos De Proximidad"
-  author: "Arlet Pinacho Báez, 
-   Isaac Giovani Escobar Gónzalez,
-   Kevin Jonathan Garduño Escobar,
-   Seldon Sautto Ramírez"
+  author: 
+    - name: "Arlet Pinacho Báez"
+    - name: "Isaac Giovani Escobar Gónzalez"
+    - name: "Kevin Jonathan Garduño Escobar"
+    - name: "Seldon Sautto Ramírez"
   date: "22/5/2026"
   chapters:
     - index.qmd
@@ -30,6 +31,5 @@ format:
       - brand
   pdf:
     documentclass: scrreprt
-
 
 

@@ -67,7 +67,7 @@ En reconocimiento facial, un embedding es simplemente una representación vector
 
 ## Fórmulas
 
-La **Similitud Coseno** entre dos vectores \( \vec{a} \) y \( \vec{b} \) se define como:
+La **Similitud Coseno** entre dos vectores $\vec{a}$ y $\vec{b}$ se define como:
 
 $$
 \text{similitud}(\vec{a}, \vec{b}) =
@@ -77,8 +77,8 @@ $$
 Donde:
 
 - $( \vec{a} \cdot \vec{b} )$ es el **producto punto**.
-- $( ||\vec{a}|| )$ es la **magnitud** del vector \( \vec{a} \).
-- $( ||\vec{b}|| )$ es la **magnitud** del vector \( \vec{b} \).
+- $( ||\vec{a}|| )$ es la **magnitud** del vector $\vec{a}$.
+- $( ||\vec{b}|| )$ es la **magnitud** del vector $\vec{b}$.
 
 ### Producto Punto
 

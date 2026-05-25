@@ -67,10 +67,12 @@ Calculamos la distancia euclídea entre la Persona **A** y la Persona **B** sin
 ningún escalamiento previo:
 
 $$
-d(A, B) = \sqrt{(15{,}000 - 15{,}500)^2 + (25 - 55)^2}
-= \sqrt{(-500)^2 + (-30)^2}
-= \sqrt{250{,}000 + 900}
-= \sqrt{250{,}900} \approx 500.9
+\begin{aligned}
+d(A, B) &= \sqrt{(15{,}000 - 15{,}500)^2 + (25 - 55)^2}\\
+&= \sqrt{(-500)^2 + (-30)^2}\\
+&= \sqrt{250{,}000 + 900}\\
+&= \sqrt{250{,}900} \approx 500.9
+\end{aligned}
 $$
 
 ```{python}

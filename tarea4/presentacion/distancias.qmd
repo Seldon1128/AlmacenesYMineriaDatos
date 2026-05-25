@@ -24,7 +24,7 @@ def distancia_euclideana(a, b):
 obj_a = (1, 2)
 obj_b = (4, 6)
 distancia_2d = distancia_euclideana(obj_a, obj_b)
-print(f"La distancia euclideana entre {obj_a} y {obj_b} es de {distancia_2d:.2f}")
+print(f"Distancia euclideana entre {obj_a} y {obj_b}: {distancia_2d:.2f}")
 ```
 
 O bien, es posible utilizar la versión ya implementada y optimizada de SciPy.
@@ -34,7 +34,7 @@ O bien, es posible utilizar la versión ya implementada y optimizada de SciPy.
 from scipy.spatial.distance import euclidean
 
 distancia_scipy = euclidean(obj_a, obj_b)
-print(f"La distancia euclideana entre {obj_a} y {obj_b} es de {distancia_scipy:.2f}")
+print(f"Distancia euclideana entre {obj_a} y {obj_b}: {distancia_scipy:.2f}")
 ```
 
 ### Limitaciones
@@ -61,8 +61,8 @@ Ocupando nuestra función `distancia_euclideana` implementada anteriormente, cal
 
 ```{python}
 print("--- Sin escalar ---")
-print(f"Distancia entre cliente A y cliente B: {distancia_euclideana(cliente_a, cliente_b):.1f}")
-print(f"Distancia entre cliente A y cliente C: {distancia_euclideana(cliente_a, cliente_c):.1f}")
+print(f"Distancia entre A y B: {distancia_euclideana(cliente_a, cliente_b):.1f}")
+print(f"Distancia entre A y C: {distancia_euclideana(cliente_a, cliente_c):.1f}")
 ```
 
 Con estos resultados podemos ver que el cliente más cercano al cliente A es el cliente C, aún cuando la diferencia en edad es de 30 años. Entonces, si escalamos nuestros datos, restando la media y dividiendo entre la desviación estándar tenemos lo siguiente.
@@ -79,8 +79,8 @@ datos_escalados = (datos - media) / std
 a_s, b_s, c_s = datos_escalados
 
 print("--- Con Z-Score ---")
-print(f"Distancia entre cliente A y cliente B: {distancia_euclideana(a_s, b_s):.3f}")
-print(f"Distancia entre cliente A y cliente C: {distancia_euclideana(a_s, c_s):.3f}")
+print(f"Distancia entre A y B: {distancia_euclideana(a_s, b_s):.3f}")
+print(f"Distancia entre A y C: {distancia_euclideana(a_s, c_s):.3f}")
 ```
 
 Ahora los resultados han cambiado pues vemos que el cliente más cercano al cliente A es en reaidad el cliente B.
@@ -301,7 +301,9 @@ mascota_c = [5.0, "perro"]
 tipos  = ['n', 'c']
 rangos = [2.0, 0]
 
-print(f"Distancia de Gower entre la mascota A y B: {distancia_gower(mascota_a, mascota_b, tipos, rangos):.3f}")
-print(f"Distancia de Gower entre la mascota A y C: {distancia_gower(mascota_a, mascota_c, tipos, rangos):.3f}")
+print(f"Distancia de Gower entre A y B:")
+print(f"{distancia_gower(mascota_a, mascota_b, tipos, rangos):.3f}")
+print(f"Distancia de Gower entre A y C:")
+print(f"{distancia_gower(mascota_a, mascota_c, tipos, rangos):.3f}")
 ```
 
