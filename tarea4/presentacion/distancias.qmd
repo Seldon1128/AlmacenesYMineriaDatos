@@ -288,10 +288,11 @@ def distancia_gower(a, b, tipos, rangos):
     return contribuciones
 ```
 
-Por su naturaleza para el manejo de datos mixtos, para su cálculo es necesario saber el tipo de variable al que corresponde cada atributo y el rango de aquellas que son numéricas, por lo que además de los dos objetos a evaluar, es necesaria una lista en la que se especifica por cada catributo, si es categórico o numérico y otra lista con los rangos de cada atributo (0 si es categórica).
+Por su naturaleza para el manejo de datos mixtos, para su cálculo es necesario saber el tipo de variable al que corresponde cada atributo y el rango de aquellas que son numéricas, por lo que además de los dos objetos a evaluar, es necesaria una lista en la que se especifica por cada catributo, si es categórico (`c`) o numérico (`n`) y otra lista con los rangos de cada atributo (0 si es categórica).
 
 ```{python}
 #| code-fold: false
+#ejemplo
 # Dos mascotas: [peso_kg, especie]
 mascota_a = [4.0, "gato"]
 mascota_b = [6.0, "gato"]
