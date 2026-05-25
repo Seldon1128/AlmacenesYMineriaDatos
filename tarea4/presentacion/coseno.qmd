@@ -334,3 +334,13 @@ La similitud coseno es una herramienta poderosa para cuantificar semejanza entre
 No mide distancia absoluta, sino alineación direccional.
 
 Es fundamental en múltiples aplicaciones modernas de Machine Learning.
+
+---
+
+## Preguntas de Reflexión
+
+1. Si dos vectores tienen valores muy diferentes en magnitud pero mantienen la misma proporción, ¿qué resultado obtendríamos en la similitud coseno y qué significa geométricamente?
+
+2. ¿Qué limitación tiene la similitud coseno cuando la magnitud de los datos sí representa información importante?
+
+3. ¿En qué situaciones sería más apropiado utilizar similitud coseno en lugar de distancia Euclídea?
