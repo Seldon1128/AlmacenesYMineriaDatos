@@ -293,7 +293,7 @@ Por su naturaleza para el manejo de datos mixtos, para su cálculo es necesario 
 ```{python}
 #| code-fold: false
 #ejemplo
-# Dos mascotas: [peso_kg, especie]
+# mascotas: [peso_kg, especie]
 mascota_a = [4.0, "gato"]
 mascota_b = [6.0, "gato"]
 mascota_c = [5.0, "perro"]
@@ -306,4 +306,66 @@ print(f"{distancia_gower(mascota_a, mascota_b, tipos, rangos):.3f}")
 print(f"Distancia de Gower entre A y C:")
 print(f"{distancia_gower(mascota_a, mascota_c, tipos, rangos):.3f}")
 ```
+## Preguntas de reflexión
+
+1. Si la distancia Manhattan es la suma de diferencias absolutas, ¿qué forma geométrica describe el conjunto de todos los puntos equidistantes a un punto central? ¿Y en el caso de Euclídea?
+
+```{python}
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+theta = np.linspace(0, 2 * np.pi, 300)
+r = 1.0
+
+# Euclídeana: circunferencia
+ax = axes[0]
+x = r * np.cos(theta)
+y = r * np.sin(theta)
+ax.plot(x, y, color="#534AB7", linewidth=2)
+ax.set_title("Euclídea (L2)", fontsize=12)
+ax.set_aspect("equal")
+ax.axhline(0, color="gray", linewidth=0.5)
+ax.axvline(0, color="gray", linewidth=0.5)
+ax.set_xlim(-1.5, 1.5)
+ax.set_ylim(-1.5, 1.5)
+ax.grid(True, linestyle="--", alpha=0.3)
+ax.annotate("r = 1", xy=(0.72, 0.72), color="#534AB7", fontsize=10)
+
+# Manhattan: rombo
+ax = axes[1]
+rombo_x = [1, 0, -1, 0, 1]
+rombo_y = [0, 1,  0, -1, 0]
+ax.plot(rombo_x, rombo_y, color="#BA7517", linewidth=2)
+ax.set_title("Manhattan (L1)", fontsize=12)
+ax.set_aspect("equal")
+ax.axhline(0, color="gray", linewidth=0.5)
+ax.axvline(0, color="gray", linewidth=0.5)
+ax.set_xlim(-1.5, 1.5)
+ax.set_ylim(-1.5, 1.5)
+ax.grid(True, linestyle="--", alpha=0.3)
+ax.annotate("r = 1", xy=(0.1, 0.6), color="#BA7517", fontsize=10)
+
+plt.suptitle("Conjunto de puntos equidistantes según cada métrica", fontsize=13)
+plt.tight_layout()
+plt.show()
+```
+
+2. ¿Qué pasa en el caso de Gower si dos objetos son idénticos en todas las variables continuas pero difieren en una categórica?
+
+```{python}
+# personas: [peso, estatura, edad, animal_favorito]
+persona_a = [45.5, 1.6, 8, "gato "]
+persona_b = [45.5, 1.6, 8, "gato"]
+
+tipos  = ['n', 'n', 'n', 'c']
+rangos = [20, 0.7, 10, 0] # suponemos que se obtienen a partir de más datos
+
+print(f"Distancia de Gower entre A y B:")
+print(f"{distancia_gower(persona_a, persona_b, tipos, rangos):.2f}")
+```
+
+3. ¿Cómo se relaciona la multidimensionalidad con la distancia euclideana y la manhattan?
+
+[ver más](https://bib.dbvis.de/uploadedFiles/155.pdf)
 
